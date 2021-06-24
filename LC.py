@@ -164,7 +164,7 @@ class LightCurve:
     def handle_hops(self, peaks, starts, ends, lc_edges):
         """
         Handle mismatches and issues with peak_time, start_time, and end_time combinations
-        Light curve edges:
+        lc_edges:
             a) neglect:
                 single start and end times are neglected
                 peaks without start or end time are neglected
