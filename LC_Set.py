@@ -58,9 +58,10 @@ class LC_Set:
         mom_lc = []
         hopjects = []
 
+        #make sure Bayesian blocks have been initialized before
         for i,lc in enumerate(lcs):
             try: 
-                lc.block_pbin()
+                lc.block_pbin
             except AttributeError:
                 raise AttributeError('Initialize Bayesian blocks with .get_bblocks() for all LCs first!')
 
@@ -82,7 +83,6 @@ class LC_Set:
             for hop in hops:
                 hopjects.append(Hopject(hop, lc)) #hop = hop_params (start, peak, end)
                 mom_lc.append(i)
-                names.append(lc.name)
         self.n_blocks = np.array([h.n_blocks for h in hopjects])
         mask = np.where(self.n_blocks > block_min)
         # eg one-block hop: n_blocks = end_block - start_block = 5 - 3 = 2 !> 2 (minimum blocks of hop)
@@ -110,11 +110,11 @@ class LC_Set:
 
     #--------------------------------------------------------------------------------------------------------------------------------
     def plot_asym(self, N_bins=None, dens=True):
-        histo, fancy_bins, p = fancy_hist(self.asym, bins='blocks', density=dens, histtype='step')
+        histo, fancy_bins, p = fancy_hist(self.asym, bins='blocks', density=dens, histtype='step', label='Bayesian binning')
         if N_bins:
             plt.hist(self.asym, N_bins)
         else:
-            histo, fancy_bins, p = fancy_hist(self.asym, bins='knuth', density=dens, edgecolor='k', color='hotpink')
+            histo, fancy_bins, p = fancy_hist(self.asym, bins='knuth', density=dens, edgecolor='k', color='hotpink', label='Knuth bins')
 
     def plot_dur(self, N_bins=None, dens=True):
         histo, fancy_bins, p = fancy_hist(self.dur, bins='blocks', density=dens, histtype='step')

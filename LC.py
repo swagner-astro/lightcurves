@@ -410,7 +410,8 @@ class LightCurve:
         for i,_ in enumerate(start_times):
             x = np.linspace(start_times[i], end_times[i])
             y = np.ones(len(x)) * np.max(self.flux)
-            y1 = np.zeros(len(x))
+            #y1 = np.zeros(len(x))
+            y1 = np.min(self.flux)
             if i == 0:
                 plt.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, label='hop', zorder=0)
             if i == 1:
