@@ -8,14 +8,6 @@ import logging
 logging.basicConfig(level=logging.ERROR) #see LC.py
 
 
-
-## best way to create array of lcs:
-#lcs = np.zeros(len(files), dtype = object)
-#[lcs[i] = LightCurve(time, flux, flux_error) for i in files]
-
-
-
-
 class LC_Set:
     '''
     Light Curve Set
@@ -26,7 +18,13 @@ class LC_Set:
 
     lcs:
         list or np.array of Light Curve Objects
-        Note: get_bblocks() needs to be applied to all lcs first!
+        Note: get_bblocks() needs to be applied to all lcs first! 
+        For example:
+            lcs = np.zeros(len(files), dtype = object)
+            for i in files:
+                lc = LightCurve(time[i], flux[i], flux_error[i])
+                lc.get_bblocks()
+                lcs[i] = lc
 
     hop_method:
         a) 'baseline'
@@ -129,11 +127,3 @@ class LC_Set:
     #--------------------------------------------------------------------------------------------------------------------------------
     def scatter_plot(dF,dt)
     """
-
-
-
-
-
-
-
-

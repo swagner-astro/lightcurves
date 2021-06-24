@@ -3,8 +3,6 @@ from matplotlib import pyplot as plt
 from selfmade_py.LC_new import LightCurve
 
 
-
-
 class Hopject: 
     '''
     HOP Class
@@ -46,8 +44,3 @@ class Hopject:
         y = np.ones(len(x)) * self.peak_flux
         y1 = np.zeros(len(x))
         plt.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, label='hop', zorder=0)
-
-
-
-
-

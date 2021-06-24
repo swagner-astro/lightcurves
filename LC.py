@@ -52,7 +52,6 @@ class LightCurve:
         self.name = name
         self.z = z
 
-
     def plot_lc(self, data_color='k', data_label='obs flux', **kwargs):
         plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, ecolor=data_color, elinewidth=1, 
             linewidth=0, marker='+', markersize=3, color=data_color, **kwargs)
@@ -242,7 +241,6 @@ class LightCurve:
 
         return(peaks, starts, ends)
     
-        
     #--------------------------------------------------------------------------------------------------------------------------------
     def get_hop_baseline(self, baseline=None, lc_edges='neglect'):
         """
@@ -464,25 +462,20 @@ class LightCurve:
         plt.ylabel('sharp')
         fig.subplots_adjust(hspace=0)
 
-
 ''' 
 FUTURE WORK:
     #--------------------------------------------------------------------------------------------------------------------------------
     def get_ou_params(self):
+        #see https://github.com/PRBurd/astro-wue
     	#check for negative values
     	#check for flux units
     	return(mu, theta, sigma)
 
     #--------------------------------------------------------------------------------------------------------------------------------
     def get_psd(self):
-    	#
     	self.psd_slope = --
     	return(psd_slope)
 
     def plot_psd(self):
     	plot se psd
 '''
-
-
-
-
