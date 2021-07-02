@@ -49,7 +49,7 @@ class LC_Set:
         e.g. mean of flux (default), median of flux, quiescent background ...
 
     block_min: 
-        Minimal number of blocks to be counted as flare, e.g. block_min = 2 -> no single-block flares
+        Minimal number of blocks to be a flare, e.g. block_min = 2 -> no single-block flares
     '''
     def __init__(self, lcs, hop_method='flip', lc_edges='neglect', baseline='mean', block_min=1):
         # lc.get_bblock needs to be run already for each lc (do that in initialization)!!
@@ -63,7 +63,7 @@ class LC_Set:
             try: 
                 lc.block_pbin
             except AttributeError:
-                raise AttributeError('Initialize Bayesian blocks with .get_bblocks() for all LCs first!')
+                raise AttributeError('Initialize Bayesian blocks for all LCs first!')
 
             logging.debug(str(i))
             #optional: multiprocessing for hoparound of each lc here
@@ -85,7 +85,8 @@ class LC_Set:
                 mom_lc.append(i)
         self.n_blocks = np.array([h.n_blocks for h in hopjects])
         mask = np.where(self.n_blocks > block_min)
-        # eg one-block hop: n_blocks = end_block - start_block = 5 - 3 = 2 !> 2 (minimum blocks of hop)
+        # eg one-block hop: n_blocks = end_block - start_block 
+        #                            = 5 - 3 = 2 !> 2 (minimum blocks of hop)
 
         self.mom_lc = np.array(mom_lc)[mask]
         self.hopjects = np.array(hopjects, dtype = object)[mask]
@@ -100,7 +101,7 @@ class LC_Set:
         self.decay_flux = np.array([h.decay_flux for h in hopjects])[mask]
         self.z = np.array([h.z for h in hopjects])[mask]
 
-    #--------------------------------------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def zcor(self, times): #times = e.g. LC_Set.dur
         if len(np.where(np.isnan(self.z) == True)[0]) > 0:
             print('Error: not all LCs have a redshift')
@@ -108,22 +109,25 @@ class LC_Set:
             times_intr = times / (1 + self.z)
             return(times_intr)
 
-    #--------------------------------------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def plot_asym(self, N_bins=None, dens=True):
-        histo, fancy_bins, p = fancy_hist(self.asym, bins='blocks', density=dens, histtype='step', label='Bayesian binning')
+        histo, fancy_bins, p = fancy_hist(self.asym, bins='blocks', density=dens, histtype='step',
+                                          label='Bayesian binning')
         if N_bins:
             plt.hist(self.asym, N_bins)
         else:
-            histo, fancy_bins, p = fancy_hist(self.asym, bins='knuth', density=dens, edgecolor='k', color='hotpink', label='Knuth bins')
+            histo, fancy_bins, p = fancy_hist(self.asym, bins='knuth', density=dens, edgecolor='k',
+                                              color='hotpink', label='Knuth bins')
 
     def plot_dur(self, N_bins=None, dens=True):
         histo, fancy_bins, p = fancy_hist(self.dur, bins='blocks', density=dens, histtype='step')
         if N_bins:
             plt.hist(self.asym, N_bins)
         else:
-            histo, fancy_bins, p = fancy_hist(self.dur, bins='knuth', density=dens, edgecolor='k', color='limegreen')
+            histo, fancy_bins, p = fancy_hist(self.dur, bins='knuth', density=dens, edgecolor='k',
+                                              color='limegreen')
     
     """
-    #--------------------------------------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def scatter_plot(dF,dt)
     """

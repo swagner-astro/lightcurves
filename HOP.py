@@ -7,7 +7,7 @@ class Hopject:
     '''
     HOP Class
     ==========
-    A segment in a light curve, i.e. a group of Bayesian blocks, that represent a flare (also called HOP group)
+    Segment in a light curve, i.e. a group of Bayesian blocks, that represent a flare ( HOP group)
     For definition of start, peak and end of the flare check out the LightCurve class
     '''
     def __init__(self, hop_params, lc): #e.g. Hopject(lc.get_hop_method[0], lc)
@@ -16,7 +16,8 @@ class Hopject:
         #self.mask = which bins -> mask to have all HOP bins of lc
         #self.n_bins = how many bins
         #self.coverage = bins/time
-        self.n_blocks = lc.bb_i_end(self.end_time) - lc.bb_i_start(self.start_time) #e.g. one-block hop: 5 - 3 = 2 
+        self.n_blocks = lc.bb_i_end(self.end_time) - lc.bb_i_start(self.start_time) 
+        # e.g. one-block hop: 5 - 3 = 2 
         if lc.z:
             self.z = lc.z
         else:
@@ -33,7 +34,7 @@ class Hopject:
         self.rise_flux = self.peak_flux - self.start_flux
         self.decay_flux = self.peak_flux - self.end_flux
 
-    #--------------------------------------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
     def plot_hop(self):
         """
         Plot the snip of light curve with this flare
