@@ -1,6 +1,6 @@
 # lightcurves
 
-This is the lightcurve repository. 
+This is the lightcurve repository. Check it out: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OqafFK4FQA_tBwTTnYMG-1D5uhTQ5X0D#scrollTo=european-mechanism)
 
 ## LC.py
 Initialize a LightCurve object based on time, flux and flux_error. 
