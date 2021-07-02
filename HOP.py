@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from selfmade_py.LC_new import LightCurve
+from LC import LightCurve
 
 
 class Hopject: 
