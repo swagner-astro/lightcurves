@@ -20,7 +20,7 @@ Initialize a (large) sample of light curves to study the distribution of flare p
 
 
 
-If you use this code please cite:
+If you use this code please cite: <br>
 @article{Wagner:2021jn,
   author = "Wagner, Sarah M.  and  Burd, Paul  and  Dorner, Daniela  and  Mannheim, Karl  and  Buson, Sara  and  Gokus, Andrea  and  Madejski, Greg  and  Scargle, Jeffrey  and  Arbet-Engels, Axel  and  Baack, Dominik  and  Balbo, Matteo  and  Biland, Adrian  and  Bretz, Thomas  and  Buss, Jens  and  Elsaesser, Dominik  and  Eisenberger, Laura  and  Hildebrand, Dorothee  and  Iotov, Roman  and  Kalenski, Adelina  and  Neise, Dominik  and  Noethe, Maximilian  and  Paravac, Aleksander  and  Rhode, Wolfgang  and  Schleicher, Bernd  and  Sliusar, Vitalii  and  Walter, Roland",
   title = "{Statistical properties of flux variations in blazar light curves at GeV and TeV energies}",
