@@ -2,8 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import astropy.visualization.hist as fancy_hist
 #https://docs.astropy.org/en/stable/api/astropy.visualization.hist.html
-from LC import LightCurve
-from HOP import Hopject
+from lightcurves.LC import LightCurve
+from lightcurves.HOP import Hopject
 import logging
 logging.basicConfig(level=logging.ERROR) #see LC.py
 
