@@ -26,7 +26,21 @@ def flux_puffer(flux, threshold, threshold_error):
     flux_error_new = np.where(flux > threshold, flux_error, th_error)
     return(flux_new, flux_error_new)
 
+def fix_data(time, flux, flux_error):
+    """
+    ATTENTION! this deletes bins, if there is np.nan in flux(_error) or duplicate in time
+    """
+    flux_ = flux[np.invert(np.isnan(flux)) * np.invert(np.isnan(flux_error))]
+    flux_error_ = flux_error[np.invert(np.isnan(flux)) * np.invert(np.isnan(flux_error))]
+    time_ = time[np.invert(np.isnan(flux)) * np.invert(np.isnan(flux_error))]
+    logging.info('Deleted ' + str(len(flux) - len(flux_)) + ' np.nan values.')
+    unique_time, unique_time_id = np.unique(time_, return_index=True)
+    good_flux = flux_[unique_time_id]
+    good_flux_error = flux_error_[unique_time_id]
+    logging.info('Deleted ' + str(len(time_) - len(unique_time)) + ' time duplicates')
+    return(unique_time, good_flux, good_flux_error)
 
+#--------------------------------------------------------------------------------------------------
 class LightCurve:
     """
     Light Curve Class
@@ -51,10 +65,16 @@ class LightCurve:
         self.flux_error = flux_error
         self.name = name
         self.z = z
+        if len(time) != len(flux) or len(time) != len(flux_error):
+            raise ValueError('Input arrays do not have same length')
+        if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
+            raise TypeError('flux or flux_error contain np.nan values')
+        if len(time) != len(np.unique(time)):
+            raise ValueError('time contains duplicate values')
 
-    def plot_lc(self, data_color='k', data_label='obs flux', **kwargs):
-        plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
-                     ecolor=data_color, elinewidth=1, linewidth=0, marker='+', markersize=3, 
+    def plot_lc(self, data_color='k', **kwargs):
+        plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
+                     elinewidth=1, linewidth=0, marker='+', markersize=3, 
                      color=data_color, **kwargs)
 
     #----------------------------------------------------------------------------------------------
@@ -145,6 +165,8 @@ class LightCurve:
     def bb_i(self, t):
         """
         Convert time to index of corresponding Bayesian block (e.g. block_value of peak_time)
+        use bb_i_start/bb_i_end to make sure you get the block left/right outside of hop
+        this works fine for flip, halfclap, and sharp but *NOT for BASELINE* (-> block inside hop)
         """
         if t == self.edges[0]:
             return(int(0))
@@ -155,8 +177,8 @@ class LightCurve:
 
     def bb_i_start(self,t):
         """
-        Convert time to index of corresponding Bayesian block assuming that time is start time
-        (i.e. if time = edge -> take block on the left)
+        if time = edge -> take block on the left
+        ATTENTION: for baseline method this is first block of hop -> use bb_i() instead (works)
         """
         block_index = [
             e for e in range(len(self.edges)-1) if t >= self.edges[e] and t < self.edges[e+1]]
@@ -164,8 +186,8 @@ class LightCurve:
 
     def bb_i_end(self,t):
         """
-        Convert time to index of corresponding Bayesian block assuming that time is end time
-        (i.e. if time = edge -> take block on the right)
+        if time = edge -> take block on the right
+        ATTENTION: for baseline method this is last block of hop - use bb_i() instead (TBD)
         """
         block_index = [
             e for e in range(len(self.edges)-1) if t > self.edges[e] and t <= self.edges[e+1]]

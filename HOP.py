@@ -31,6 +31,8 @@ class Hopject:
         self.start_flux = lc.block_val[lc.bb_i_start(self.start_time)]
         self.peak_flux = lc.block_val[lc.bb_i(self.peak_time)]
         self.end_flux = lc.block_val[lc.bb_i_end(self.end_time)]
+        #attention: bb_i has bugs for baseline method
+        # in case of baseline 
         self.rise_flux = self.peak_flux - self.start_flux
         self.decay_flux = self.peak_flux - self.end_flux
 
