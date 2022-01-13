@@ -60,9 +60,9 @@ class LightCurve:
         -> See GitHub description and Jupyter Notebook for more information
     """
     def __init__(self, time, flux, flux_error, name=None, z=None):
-        self.time = time
-        self.flux = flux
-        self.flux_error = flux_error
+        self.time = np.array(time)
+        self.flux = np.array(flux)
+        self.flux_error = np.array(flux_error)
         self.name = name
         self.z = z
         if len(time) != len(flux) or len(time) != len(flux_error):
