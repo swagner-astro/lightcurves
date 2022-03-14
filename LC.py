@@ -512,6 +512,7 @@ class LightCurve:
 FUTURE WORK:
     #-----------------------------------------------------------------------------------------------
     def get_ou_params(self):
+        #implementing this right now
         #see https://github.com/PRBurd/astro-wue
     	#check for negative values
     	#check for flux units
