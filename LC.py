@@ -524,4 +524,10 @@ FUTURE WORK:
 
     def plot_psd(self):
     	plot se psd
+    
+    def get_Fvar()
+    
+    def get_pValueForConstant()
+        search fancy Name 
+    
 '''
