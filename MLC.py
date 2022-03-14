@@ -63,10 +63,10 @@ class MultiLC:
     def plot_mlc(self, blocks=True, **kwargs):
         plt.rc('xtick', labelsize=15)
         ylen = 2 + self.n*2
-        fig, axes = plt.subplots(self.n,1, figsize=(15,ylen), sharex=True)
+        fig, self.axes = plt.subplots(self.n,1, figsize=(15,ylen), sharex=True)
         plt.subplots_adjust(left=None, bottom=None, right=None, top=0.9, wspace=None, hspace=0)
         plt.suptitle(self.name, fontsize=20)
-        for lc, lc_id, a in zip(self.lc_list, self.lc_id, axes):
+        for lc, lc_id, a in zip(self.lc_list, self.lc_id, self.axes):
             plt.sca(a)
             if blocks:
                 #bblocks have to be individually initialized for each LC first
@@ -74,7 +74,7 @@ class MultiLC:
             else:
                 lc.plot_lc(**kwargs)
             plt.ylabel(lc_id, fontsize=15)
-        plt.xlabel('Time [MJD]', fontsize=15)
+        plt.xlabel('Time', fontsize=15)
 
     #-----------------------------------------------------------------------------------------------
     def insert_lc(self, position, lc, lc_id):
@@ -95,6 +95,52 @@ class MultiLC:
             self.n = len(self.lc_list)
         return(self)
 
+    #-----------------------------------------------------------------------------------------------
+    def plot_a(self, **kwargs):
+        """
+        plot baseline in each light curve
+        """
+        for a in self.axes:
+            plt.sca(a)
+            plt.hlines(1e6, xmin=0, xmax=1e7, **kwargs)
+
+    #-----------------------------------------------------------------------------------------------
+    def plot_baselines(self, values, legend=None, **kwargs):
+        """
+        plot baseline in each light curve
+        """
+        """ -> this didn't work cuz everything was plotted on each axis
+        -> try to create mean/median default values array and then go though plots as underneath
+        if values == 'mean':
+            for a, lc in zip(self.axes, self.lc_list):
+                plt.sca(a)
+                plt.hlines(np.mean(lc.flux), xmin=np.min(lc.time), xmax=np.max(lc.time), **kwargs)
+        if values == 'median':
+            for a, lc in zip(self.axes, self.lc_list):
+                plt.sca(a)
+                plt.hlines(np.median(lc.flux), xmin=np.min(lc.time), xmax=np.max(lc.time), 
+                          label='median', **kwargs)
+        #if values == 'qb':
+        #    ...
+        else:
+        """
+        if legend is None:
+            for value, a, lc in zip(values, self.axes, self.lc_list):
+                plt.sca(a)
+                if value:
+                    plt.hlines(value, xmin=np.min(lc.time), xmax=np.max(lc.time), **kwargs)
+                else:
+                    continue
+        else:
+            for value, a, lc, label in zip(values, self.axes, self.lc_list, legend):
+                plt.sca(a)
+                if value:
+                    plt.hlines(value, xmin=np.min(lc.time), xmax=np.max(lc.time),
+                               label=label, **kwargs)
+                    plt.legend()
+                else:
+                    continue
+            
 
 
 

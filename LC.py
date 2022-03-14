@@ -151,13 +151,13 @@ class LightCurve:
         return(self.block_pbin, self.block_val, self.block_val_error, self.edge_index, self.edges)
 
     #----------------------------------------------------------------------------------------------
-    def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux'):
+    def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux', size=1):
         try:
-            plt.step(self.time, self.block_pbin, where='mid', linewidth=1, label='bblocks', 
+            plt.step(self.time, self.block_pbin, where='mid', linewidth=1*size, label='bblocks', 
             	     color=bb_color, zorder=1000)
             plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
-            	         ecolor=data_color, elinewidth=1, linewidth=0, marker='+', markersize=3, 
-            	         color=data_color)
+            	         ecolor=data_color, elinewidth=1*size, linewidth=0, marker='+', 
+                         markersize=3*size, color=data_color)
         except AttributeError:
             raise AttributeError('Initialize Bayesian blocks with .get_bblocks() first!')
 
