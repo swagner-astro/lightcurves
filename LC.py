@@ -511,12 +511,9 @@ class LightCurve:
 ''' 
 FUTURE WORK:
     #-----------------------------------------------------------------------------------------------
-    def get_ou_params(self):
-        #implementing this right now
-        #see https://github.com/PRBurd/astro-wue
-    	#check for negative values
-    	#check for flux units
-    	return(mu, theta, sigma)
+    def get_ou(self):
+        #TBD: Paul and Luca? 
+        return(mu, sigma, theta)
 
     #-----------------------------------------------------------------------------------------------
     def get_psd(self):
