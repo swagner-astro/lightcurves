@@ -51,7 +51,7 @@ class MultiLC:
         lc_list = list of LightCurve objects
         lc_id = list of strings identifying each LC, eg ['Fermi', 'XRT', ...]
         """
-        self.lc_list = np.array(lc_list)
+        self.lcs = np.array(lc_list)
         self.lc_id = np.array(lc_id) 
         if len(lc_list) != len(lc_id):
             raise ValueError('LightCurves do not match identifiers')
@@ -66,7 +66,7 @@ class MultiLC:
         fig, self.axes = plt.subplots(self.n,1, figsize=(15,ylen), sharex=True)
         plt.subplots_adjust(left=None, bottom=None, right=None, top=0.9, wspace=None, hspace=0)
         plt.suptitle(self.name, fontsize=20)
-        for lc, lc_id, a in zip(self.lc_list, self.lc_id, self.axes):
+        for lc, lc_id, a in zip(self.lcs, self.lc_id, self.axes):
             plt.sca(a)
             if blocks:
                 #bblocks have to be individually initialized for each LC first
@@ -86,13 +86,13 @@ class MultiLC:
         otherwise inserted in every execution!
         """
         if position == -1:
-            self.lc_list = np.append(self.lc_list, lc)
+            self.lcs = np.append(self.lcs, lc)
             self.lc_id = np.append(self.lc_id, lc_id)
-            self.n = len(self.lc_list)
+            self.n = len(self.lcs)
         else:
-            self.lc_list = np.insert(self.lc_list, position, lc)
+            self.lcs = np.insert(self.lcs, position, lc)
             self.lc_id = np.insert(self.lc_id, position, lc_id)
-            self.n = len(self.lc_list)
+            self.n = len(self.lcs)
         return(self)
 
     #-----------------------------------------------------------------------------------------------
@@ -112,11 +112,11 @@ class MultiLC:
         """ -> this didn't work cuz everything was plotted on each axis
         -> try to create mean/median default values array and then go though plots as underneath
         if values == 'mean':
-            for a, lc in zip(self.axes, self.lc_list):
+            for a, lc in zip(self.axes, self.lcs):
                 plt.sca(a)
                 plt.hlines(np.mean(lc.flux), xmin=np.min(lc.time), xmax=np.max(lc.time), **kwargs)
         if values == 'median':
-            for a, lc in zip(self.axes, self.lc_list):
+            for a, lc in zip(self.axes, self.lcs):
                 plt.sca(a)
                 plt.hlines(np.median(lc.flux), xmin=np.min(lc.time), xmax=np.max(lc.time), 
                           label='median', **kwargs)
@@ -125,14 +125,14 @@ class MultiLC:
         else:
         """
         if legend is None:
-            for value, a, lc in zip(values, self.axes, self.lc_list):
+            for value, a, lc in zip(values, self.axes, self.lcs):
                 plt.sca(a)
                 if value:
                     plt.hlines(value, xmin=np.min(lc.time), xmax=np.max(lc.time), **kwargs)
                 else:
                     continue
         else:
-            for value, a, lc, label in zip(values, self.axes, self.lc_list, legend):
+            for value, a, lc, label in zip(values, self.axes, self.lcs, legend):
                 plt.sca(a)
                 if value:
                     plt.hlines(value, xmin=np.min(lc.time), xmax=np.max(lc.time),
