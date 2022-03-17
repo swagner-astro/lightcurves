@@ -48,7 +48,7 @@ class MultiLC:
     def __init__(self, lc_list, lc_id, name=None):
         """
         arguments:
-        lc_list = list of LightCurve objects
+        lc_list = list of LightCurve objects (lcs)
         lc_id = list of strings identifying each LC, eg ['Fermi', 'XRT', ...]
         """
         self.lcs = np.array(lc_list)
