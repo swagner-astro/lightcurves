@@ -572,19 +572,24 @@ class LightCurve:
     return(self.ou_mu, self.ou_sigma, alpha_sign * alpha_value, self.ou_theta )
 
 
+
 ''' 
 FUTURE WORK:
     #-----------------------------------------------------------------------------------------------
     def get_psd(self):
-    	self.psd_slope = --
+    	self.psd_slope = ...
     	return(psd_slope)
 
     def plot_psd(self):
     	plot se psd
     
-    def get_Fvar()
+    def get_Fvar():
+        #TBD: Bernd
+        ...
+        return(F_var, F_var_error)
     
-    def get_pValueForConstant()
-        search fancy Name 
-    
+    def is_constant():
+        #TBD: Bernd
+        ...
+        return(p_value)
 '''
