@@ -558,7 +558,7 @@ class LightCurve:
         # theta = mean revision rate = friction coefficient/tensor = 1 - alpha
         # -> value of alpha is computed according to equation 2.14 in Kohlepp 2021
         # -> sign of alpha is computed according to equation 2.15e in Kohlepp 2021
-        alpha_value = np.sqrt(np.abs(1 - (ou_sigma**2 / np.var(data))))
+        alpha_value = np.sqrt(np.abs(1 - (self.ou_sigma**2 / np.var(data))))
         pos = np.array(data > (self.ou_mu - sigma_alpha * std), dtype=bool) *\
               np.array(data < (self.ou_mu + sigma_alpha * std), dtype=bool)
         # discards last element (no u_T+1 would exist)
