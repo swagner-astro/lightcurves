@@ -44,7 +44,7 @@ def fix_data(time, flux, flux_error):
 class LightCurve:
     """
     Light Curve Class
-    =================
+    ------------------
     Create a light curve based on input data: time, flux, flux_error
     Determine Bayesian block representation of light curve.
     Characterize flares (start, peak and end time) based on blocks with four methods:
