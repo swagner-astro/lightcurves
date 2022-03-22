@@ -14,12 +14,12 @@ WARNING:    sth unexpected happened
 ERROR:      sth didn't work, abort mission
 """ 
 
-def make_multi_lcs(lcs_per_telescope, telescope_ids=None):
+def make_multi_lcs(lcs_per_telescope, lc_ids=None, lc_labels=None):
     """
     [] [telescope] [source] -> [] [source] [telescope]
     sort according to first telescope
     create list of MultiLC objects
-    telescope_ids = list of telescope identifier (strings) same order as lcs
+    lc_ids = list of telescope identifier (strings) same order as lcs
     """
     multi_lcs = []
     prime_names = np.array([lc.name for lc in lcs_per_telescope[0]])
@@ -37,24 +37,29 @@ def make_multi_lcs(lcs_per_telescope, telescope_ids=None):
                 #mock_lc = LightCurve(prime_lc.time, prime_lc.flux, prime_lc.flux_error)
                 mock_lc = LightCurve(time, flux, flux_error)
                 mock_lc.get_bblocks()
+                mock_lc.get_ou()
                 mlc_list.append(mock_lc)
-        mlc = MultiLC(mlc_list, telescope_ids, prime_name)
+        mlc = MultiLC(mlc_list, lc_ids=lc_ids, lc_labels=lc_labels, name=prime_name)
         multi_lcs.append(mlc)
     return multi_lcs
 
 #---------------------------------------------------------------------------------------------------
      
 class MultiLC:
-    def __init__(self, lc_list, lc_id, name=None):
+    def __init__(self, lc_list, lc_ids, lc_labels=None, name=None):
         """
         arguments:
         lc_list = list of LightCurve objects
         lc_id = list of strings identifying each LC, eg ['Fermi', 'XRT', ...]
         """
         self.lc_list = np.array(lc_list)
-        self.lc_id = np.array(lc_id) 
-        if len(lc_list) != len(lc_id):
+        self.lc_ids = np.array(lc_ids)
+        if len(lc_list) != len(lc_ids):
             raise ValueError('LightCurves do not match identifiers')
+        if lc_labels is None:
+        	self.lc_labels = lc_ids
+        else:
+        	self.lc_labels = lc_labels
         self.name = str(name)
         self.n = len(lc_list)
             
@@ -66,14 +71,14 @@ class MultiLC:
         fig, self.axes = plt.subplots(self.n,1, figsize=(15,ylen), sharex=True)
         plt.subplots_adjust(left=None, bottom=None, right=None, top=0.9, wspace=None, hspace=0)
         plt.suptitle(self.name, fontsize=20)
-        for lc, lc_id, a in zip(self.lc_list, self.lc_id, self.axes):
+        for lc, lc_label, a in zip(self.lc_list, self.lc_labels, self.axes):
             plt.sca(a)
             if blocks:
                 #bblocks have to be individually initialized for each LC first
                 lc.plot_bblocks(**kwargs)
             else:
                 lc.plot_lc(**kwargs)
-            plt.ylabel(lc_id, fontsize=15)
+            plt.ylabel(lc_label, fontsize=15)
         plt.xlabel('Time', fontsize=15)
 
     #-----------------------------------------------------------------------------------------------
@@ -87,11 +92,11 @@ class MultiLC:
         """
         if position == -1:
             self.lc_list = np.append(self.lc_list, lc)
-            self.lc_id = np.append(self.lc_id, lc_id)
+            self.lc_id = np.append(self.lc_ids, lc_id)
             self.n = len(self.lc_list)
         else:
             self.lc_list = np.insert(self.lc_list, position, lc)
-            self.lc_id = np.insert(self.lc_id, position, lc_id)
+            self.lc_id = np.insert(self.lc_ids, position, lc_id)
             self.n = len(self.lc_list)
         return(self)
 

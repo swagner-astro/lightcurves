@@ -533,8 +533,13 @@ class LightCurve:
         """
         
         # Assumption: lc flux is exponentiated time series (we analyze the latter)
-        if len(np.where(self.flux < 0)[0]) > 0:
-            raise ValueError('Flux contains negative values, cannot take np.log10()')
+        if len(np.where(self.flux < 0)[0]) > 0 or len(self.flux)<4:
+            self.ou_mu = None
+            self.ou_sigma = None
+            self.ou_theta = None
+            #raise ValueError('Flux contains negative values, cannot take np.log10()')
+            print('Flux contains negative values, cannot take np.log10()')
+            return None
         data = np.log10(self.flux) # time series = OU
         # adding a random buffer to make flux positive results in different parameters - bäh!
         
