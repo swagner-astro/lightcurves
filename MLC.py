@@ -50,16 +50,17 @@ class MultiLC:
         """
         arguments:
         lc_list = list of LightCurve objects (lcs)
-        lc_id = list of strings identifying each LC, eg ['Fermi', 'XRT', ...]
+        lc_id = list of strings identifying each LC, eg ['fermi', 'xst', ...]
+        lc_label = list of strings for telescope and flux unit to plot ['FACT \n[CU]',  ...]
         """
         self.lc_list = np.array(lc_list)
         self.lc_ids = np.array(lc_ids)
         if len(lc_list) != len(lc_ids):
             raise ValueError('LightCurves do not match identifiers')
         if lc_labels is None:
-        	self.lc_labels = lc_ids
+        	self.lc_labels = np.array(lc_ids)
         else:
-        	self.lc_labels = lc_labels
+        	self.lc_labels = np.array(lc_labels)
         self.name = str(name)
         self.n = len(lc_list)
             
@@ -82,7 +83,7 @@ class MultiLC:
         plt.xlabel('Time', fontsize=15)
 
     #-----------------------------------------------------------------------------------------------
-    def insert_lc(self, position, lc, lc_id):
+    def insert_lc(self, position, lc, lc_id, lc_label=None):
         """
         add another light curve
         make sure to avoid mutable presto-chango with 
@@ -94,10 +95,18 @@ class MultiLC:
             self.lc_list = np.append(self.lc_list, lc)
             self.lc_id = np.append(self.lc_ids, lc_id)
             self.n = len(self.lc_list)
+            if lc_label is None:
+            	self.lc_labels = np.append(self.lc_labels, lc_id)
+            else:
+            	self.lc_labels = np.append(self.lc_labels, lc_label)
         else:
             self.lc_list = np.insert(self.lc_list, position, lc)
             self.lc_id = np.insert(self.lc_ids, position, lc_id)
             self.n = len(self.lc_list)
+            if lc_label is None:
+            	self.lc_labels = np.insert(self.lc_labels, position, lc_id)
+            else:
+            	self.lc_labels = np.insert(self.lc_labels, position, lc_label)
         return(self)
 
     #-----------------------------------------------------------------------------------------------
