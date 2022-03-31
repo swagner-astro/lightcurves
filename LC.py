@@ -40,6 +40,45 @@ def fix_data(time, flux, flux_error):
     logging.info('Deleted ' + str(len(time_) - len(unique_time)) + ' time duplicates')
     return(unique_time, good_flux, good_flux_error)
 
+def get_gti_iis(time, n_gaps, n_pick):
+    # get index of good time intervals (divide LC into secitons in case there are n_gaps gaps in data; like FACT)
+    # biggest time gaps (length in s) in chronological order
+    diff = np.array([t - s for s, t in zip(time, time[1:])])
+    diff1 = np.sort(diff)
+    ii = [x for x in range(len(diff)) if diff[x] in diff1[-n_gaps:]] #index of the 10 longest gaps
+    GTI_start_ii = np.array(ii)+1
+    GTI_start_ii = np.insert(GTI_start_ii,0,0)
+    GTI_end_ii = np.array(ii)
+    GTI_end_ii = np.append(GTI_end_ii, len(time)-1)
+    if n_pick:
+        # only consider the n_pick longest gtis 
+        gap_len = np.array([t - s for s,t in zip(GTI_start_ii, GTI_end_ii)])
+        gap_len1 = np.sort(gap_len)
+        ii = [x for x in range(len(gap_len)) if gap_len[x] in gap_len1[-n_pick:]] # n_gaps = considered gaps (longest not gaps)
+        GTI_start_ii_ = GTI_start_ii[ii]
+        GTI_end_ii_ = GTI_end_ii[ii]
+        return GTI_start_ii_, GTI_end_ii_
+    else:
+        return GTI_start_ii, GTI_end_ii
+
+def make_gti_lcs(lc, n_gaps, n_pick=None):
+    """
+    Divide one lc with n_gaps gaps into several lcs with good coverage.
+    """
+    gti_starts, gti_ends = get_gti_iis(lc.time, n_gaps, n_pick)
+    if n_pick is None:
+        n_pick = n_gaps + 1 #select all 
+    chunks = []
+    for g in range(n_pick):
+        gti_lc = LightCurve(lc.time[gti_starts[g]:gti_ends[g]+1], 
+                            lc.flux[gti_starts[g]:gti_ends[g]+1], 
+                            lc.flux_error[gti_starts[g]:gti_ends[g]+1],
+                            name=lc.name, z=lc.z)
+        gti_lc.get_bblocks()
+        chunks.append(gti_lc)
+    return(np.array(chunks))
+
+
 #--------------------------------------------------------------------------------------------------
 class LightCurve:
     """
@@ -59,18 +98,19 @@ class LightCurve:
             Extrapolate flare behavior
         -> See GitHub description and Jupyter Notebook for more information
     """
-    def __init__(self, time, flux, flux_error, name=None, z=None):
+    def __init__(self, time, flux, flux_error, name=None, z=None, telescope=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
-        self.name = name
-        self.z = z
         if len(time) != len(flux) or len(time) != len(flux_error):
             raise ValueError('Input arrays do not have same length')
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
             raise TypeError('flux or flux_error contain np.nan values')
         if len(time) != len(np.unique(time)):
             raise ValueError('time contains duplicate values')
+        self.name = name
+        self.z = z
+        self.telescope = telescope
 
     def plot_lc(self, data_color='k', **kwargs):
         plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
