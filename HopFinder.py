@@ -3,7 +3,7 @@ import numpy as np
 from lightcurves.HOP import Hopject
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 """
 set logging to the desired level
 logging options:
@@ -57,11 +57,18 @@ class HopFinder():
         starts, ends = self.find_start_end(lc)
         peaks = self.find_peaks(lc)
         peaks, starts, ends = self.clean(peaks, starts, ends, lc)
+        if peaks is None:
+            logging.info('no hop in this light curve')
+            return None 
         peaks, starts, ends = self.clean_multi_peaks(peaks, starts, ends, lc)
+        if peaks is None:
+            logging.info('no hop in this light curve')
+            return None 
         hops = []
         for p, s, e in zip(peaks, starts, ends):
+            #TBD hier könnte man noch Kriterien für hopject einfügen (e.g. bins per block/hop)
             hops.append(Hopject((s,p,e), lc, method=type(self).__name__ ))
-            # type(self).__name__ = Name der Klasse
+            ## type(self).__name__ = Name der Klasse
         return hops
 
     def clean(self, peaks, starts, ends, lc):
@@ -254,8 +261,8 @@ class HopFinderFlip(HopFinderProcedure):
         clap_from_left = edges[i] - edges[i-1]
         #clap following block onto change block
         clap_from_right = edges[i+2] - edges[i+1]
-        s = edges[i] + min(half_block_time, clap_from_left)
-        e = edges[i+1] - min(half_block_time, clap_from_right)
+        e = edges[i] + min(half_block_time, clap_from_left)
+        s = edges[i+1] - min(half_block_time, clap_from_right)
         return s,e
 
 class HopFinderSharp(HopFinderProcedure):
@@ -266,4 +273,9 @@ class HopFinderSharp(HopFinderProcedure):
         return edges[i+1], edges[i]
 
 
+"""
+FUTURE WORK:
+    #-----------------------------------------------------------------------------------------------
+     -> implement a more reasonable Baseline method (i.e. treat multiple peaks different)
+"""
 

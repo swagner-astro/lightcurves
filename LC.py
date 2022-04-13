@@ -227,83 +227,75 @@ class LightCurve:
         return(int(block_index[0]))
     
     #----------------------------------------------------------------------------------------------
-    def hop_around(self, gamma_value=None, p0_value=0.05, lc_edges='neglect'):
-        """
-        Initialize Bayesian blocks and all HOP methods with default settings in one go
-        """
-        #self.get_bblocks(gamma_value, p0_value)
-        #self.get_hop_baseline(lc_edges=lc_edges) # necessary because of baseline argument
-        #self.get_hop_half(lc_edges)
-        #self.get_hop_flip(lc_edges)
-        #self.get_hop_sharp(lc_edges)
-        #logging.debug('hoppped around')
-        ...
+    def find_hop(self, method='half', lc_edges='neglect', baseline=None):
+        if method == 'baseline':
+            if baseline is None:
+                self.baseline = np.mean(self.flux)
+            hopfinder = HopFinderBaseline(lc_edges)
+        if method == 'half':
+            hopfinder = HopFinderHalf(lc_edges)
+        if method == 'sharp':
+            hopfinder = HopFinderSharp(lc_edges)
+        if method == 'flip':
+            hopfinder = HopFinderFlip(lc_edges)
+        self.hops = hopfinder.find(self)
+        return self.hops
 
     #----------------------------------------------------------------------------------------------
-    def plot_hop_by_time(self, start_times, end_times, ax=None): 
+    def plot_hop(self, ax=None, **kwargs):
         """
-        Plot shaded area for given start and end times
-        for example: lc.plot_hop_by_time(lc.start_times_flip, lc.end_times_flip) 
+        Plot shaded area for all hops in light curve
         """
-        if start_times is None:
-            return() # no hop found
+        if self.hops is None:
+            return # no hop in this lc
         if ax is None:
             ax = plt.gca()
-        for i,_ in enumerate(start_times):
-            x = np.linspace(start_times[i], end_times[i])
+        for i,hop in enumerate(self.hops):
+            x = np.linspace(hop.start_time, hop.end_time)
             y = np.ones(len(x)) * np.max(self.flux)
-            #y1 = np.zeros(len(x))
             y1 = np.min(self.flux)
             if i == 0:
                 ax.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2,
-                	             label='hop', zorder=0)
+                                 label='hop', zorder=0)
             if i == 1:
                 ax.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, label='hop',
-                	             zorder=0)
+                                 zorder=0)
             elif i % 2:
                 ax.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, zorder=0)
             elif i != 0:
                 ax.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, zorder=0)
-
-    def plot_hop(self, method = 'flip', ax=None):
-        """
-        Plot shaded area for given HOP method
-        """
-        if method == 'half':
-            self.plot_hop_by_time(self.start_times_half, self.end_times_half, ax=ax)
-        if method == 'flip':
-            self.plot_hop_by_time(self.start_times_flip, self.end_times_flip, ax=ax)
-        if method == 'sharp':
-            self.plot_hop_by_time(self.start_times_sharp, self.end_times_sharp, ax=ax)
-        if method == 'baseline':
-            self.plot_hop_by_time(self.start_times_bl, self.end_times_bl, ax=ax)
-            plt.hlines(self.baseline, xmin=np.min(self.time), xmax=np.max(self.time),
-            	       color='deeppink', label='baseline', linewidth=1, zorder=100)
+        #ax.set_title(lc.name, hop.method)
 
     #----------------------------------------------------------------------------------------------
     def plot_all_hop(self, gamma_value=None, p0_value=0.05, lc_edges='neglect'):
         """
         Plot all HOP methods in one figure for comparison
         """
-        self.hop_around(gamma_value, p0_value, lc_edges)
         fig = plt.figure(0,(15,7))
         plt.suptitle('All HOP methods', fontsize=16)
 
         ax0 = fig.add_subplot(511)
+        self.find_hop('baseline')
         self.plot_bblocks()
-        self.plot_hop('baseline')
+        self.plot_hop()
         plt.ylabel('baseline')
+
         ax1 = fig.add_subplot(512)
+        self.find_hop('half')
         self.plot_bblocks()
-        self.plot_hop('half')
+        self.plot_hop()
         plt.ylabel('half')
+
         ax2 = fig.add_subplot(513)
+        self.find_hop('flip')
         self.plot_bblocks()
-        self.plot_hop('flip')
+        self.plot_hop()
         plt.ylabel('flip')
+
         ax3 = fig.add_subplot(514)
+        self.find_hop('sharp')
         self.plot_bblocks()
-        self.plot_hop('sharp')
+        self.plot_hop()
         plt.ylabel('sharp')
         fig.subplots_adjust(hspace=0)
 
@@ -376,21 +368,7 @@ class LightCurve:
         return(self.ou_mu, self.ou_sigma, alpha_sign * alpha_value, self.ou_theta )
 
 
-    def find_hop(self, method='half', lc_edges='neglect', baseline=None):
-        if method == 'baseline':
-            if baseline is None:
-                self.baseline = np.mean(self.flux)
-            hopfinder = HopFinderBaseline(lc_edges)
-            return hopfinder.find(self)
-        if method == 'half':
-            hopfinder = HopFinderHalf(lc_edges)
-            return hopfinder.find(self)
-        if method == 'sharp':
-            hopfinder = HopFinderSharp(lc_edges)
-            return hopfinder.find(self)
-        if method == 'flip':
-            hopfinder = HopFinderFlip(lc_edges)
-            return hopfinder.find(self)
+
 
 
 
@@ -415,5 +393,5 @@ FUTURE WORK:
         ...
         return(p_value)
 
-    correlation
+    correlation see Abhir 2021
 '''
