@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import astropy.stats.bayesian_blocks as bblocks
 #https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
+from lightcurves.HopFinder import *
 
 import logging
 logging.basicConfig(level=logging.ERROR)
@@ -74,7 +75,6 @@ def make_gti_lcs(lc, n_gaps, n_pick=None):
                             lc.flux[gti_starts[g]:gti_ends[g]+1], 
                             lc.flux_error[gti_starts[g]:gti_ends[g]+1],
                             name=lc.name, z=lc.z)
-        gti_lc.get_bblocks()
         chunks.append(gti_lc)
     return(np.array(chunks))
 
@@ -85,18 +85,6 @@ class LightCurve:
     Light Curve Class
     ------------------
     Create a light curve based on input data: time, flux, flux_error
-    Determine Bayesian block representation of light curve.
-    Characterize flares (start, peak and end time) based on blocks with four methods:
-        1. baseline:
-            Original method as described in Meyer et al. 2019
-            https://ui.adsabs.harvard.edu/abs/2019ApJ...877...39M/abstract 
-        2. half:
-            Start/end is at center of valley block
-        3. sharp:
-            Neglect valley block
-        4. flip:
-            Extrapolate flare behavior
-        -> See GitHub description and Jupyter Notebook for more information
     """
     def __init__(self, time, flux, flux_error, name=None, z=None, telescope=None):
         self.time = np.array(time)
@@ -112,8 +100,10 @@ class LightCurve:
         self.z = z
         self.telescope = telescope
 
-    def plot_lc(self, data_color='k', **kwargs):
-        plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
+    def plot_lc(self, data_color='k', ax=None, **kwargs):
+        if ax is None:
+            ax = plt.gca()
+        ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
                      elinewidth=1, linewidth=0, marker='+', markersize=3, 
                      color=data_color, **kwargs)
 
@@ -171,7 +161,7 @@ class LightCurve:
     def get_bblocks_above(self, threshold, pass_gamma_value=None, pass_p0_value=None):
         """
         ATTENTION! This returns artificial flux values! Use cautiously if at all..
-        Note: get_bblocks as to be applied first
+        Note: get_bblocks has to be applied first
         Determine Bayesian blocks for light curve but set all blocks that are lower than threshold
         to that threshold (i.e. set small block_val to threshold and neglect edges under threshold)
         -> leaves only significant variations wrt threshold = flares?
@@ -191,11 +181,14 @@ class LightCurve:
         return(self.block_pbin, self.block_val, self.block_val_error, self.edge_index, self.edges)
 
     #----------------------------------------------------------------------------------------------
-    def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux', size=1):
-        try:
-            plt.step(self.time, self.block_pbin, where='mid', linewidth=1*size, label='bblocks', 
+    def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux',
+                     size=1, ax=None):
+        if ax is None:
+                ax = plt.gca()
+        try:   
+            ax.step(self.time, self.block_pbin, where='mid', linewidth=1*size, label='bblocks', 
             	     color=bb_color, zorder=1000)
-            plt.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
+            ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
             	         ecolor=data_color, elinewidth=1*size, linewidth=0, marker='+', 
                          markersize=3*size, color=data_color)
         except AttributeError:
@@ -232,292 +225,58 @@ class LightCurve:
         block_index = [
             e for e in range(len(self.edges)-1) if t > self.edges[e] and t <= self.edges[e+1]]
         return(int(block_index[0]))
-  
-    #----------------------------------------------------------------------------------------------
-    def handle_hops(self, peaks, starts, ends, lc_edges):
-        """
-        Handle mismatches and issues with peak_time, start_time, and end_time combinations
-        lc_edges:
-            a) neglect:
-                single start and end times are neglected
-                peaks without start or end time are neglected
-            b) add:
-                single start and end times are neglected
-                peaks without start/end: start/end is added in beginning/end of light curve
-        """
-        if len(peaks) < 1:
-            logging.info('not variable enough, no peak found')
-            return(None, None, None)
-        if lc_edges == 'neglect':
-            if len(starts) < 1 or len(ends) < 1:
-                logging.info('not variable enough, missing start or end')
-                return(None, None, None)
-        if lc_edges == 'add':
-            if len(starts) < 1:
-                starts = np.insert(starts, 0, self.edges[0])
-                logging.info('inserted single start in beginning of LC')
-            if len(ends) < 1:
-                ends = np.append(ends,self.edges[-1])
-                logging.info('inserted single end in end of LC')
-        if ends[0] < peaks[0]:
-            ends = np.delete(ends, 0)
-            logging.info('deleted single end in beginning of LC')
-            if len(ends) < 1 and lc_edges == 'neglect':
-                logging.info('this was the only end, not variable enough')
-                return(None, None, None)
-            if len(ends) < 1 and lc_edges == 'add':
-                ends = np.append(ends, self.edges[-1])
-                logging.info('inserted single end in end of LC and this is the only end')    
-        if starts[-1] > peaks[-1]:
-            starts = np.delete(starts, -1)
-            logging.info('deleted single start in end of LC')
-            if len(starts) < 1 and lc_edges == 'neglect':
-                logging.info('this was the only start, not variable enough')
-                return(None, None, None)
-            if len(starts) < 1 and lc_edges == 'add':
-                starts = np.insert(starts, 0, self.edges[0])
-                logging.info('inserted single start in beginning of LC; this is the only start')
-        if peaks[0] < starts[0]:
-            if lc_edges == 'add':
-                # artificially add start
-                starts = np.insert(starts, 0, self.edges[0])
-                logging.info('inserted single start in beginning of LC')
-            if lc_edges == 'neglect':
-                # conservatively dismiss first peak if there are multiple peaks
-                while ends[0] > peaks[1]:
-                    peaks = np.delete(peaks, 0)
-                    logging.info('neglected first multiple peak in beginning of LC')
-                #conservatively dismiss first peak and first end
-                peaks = np.delete(peaks, 0)
-                ends = np.delete(ends, 0)
-                logging.info('start missing, neglected peak and end in beginning of LC')
-                if len(peaks) < 1 or len(ends) < 1:
-                    logging.info('this was the only peak or end, not variable enough')
-                    return(None, None, None)
-        if peaks[-1] > ends[-1]:
-            if lc_edges == 'add':
-                # artificially add end
-                ends = np.append(ends, self.edges[-1])
-                logging.info('inserted single end in end of LC') 
-            if lc_edges == 'neglect':
-                # conservatively dismiss last peak if there are multiple peaks
-                if len(peaks) > 2:
-                    while starts[-1] < peaks[-2]:
-                        peaks = np.delete(peaks, -1)
-                        logging.info('neglected last multiple peak in end of LC')
-                    # conservatively dismiss last peak and last start
-                peaks = np.delete(peaks, -1)
-                starts = np.delete(starts, -1)
-                logging.info('neglected peak and start in end of LC')
-                if len(peaks) < 1 or len(starts) < 1:
-                    logging.info('this was the only peak or start, not variable enough')
-                    return(None, None, None)
-
-        return(peaks, starts, ends)
     
-    #----------------------------------------------------------------------------------------------
-    def get_hop_baseline(self, baseline=None, lc_edges='neglect'):
-        """
-        BASELINE METHOD
-        see Meyer et al. 2019 https://ui.adsabs.harvard.edu/abs/2019ApJ...877...39M/abstract
-        Define flare as group of blocks (HOP group) with start, peak, and end time
-        Determine peak_time of flare to be at center of colal maxima of the blocks
-        Determine start_time/end_time to be where flux exceeds/goes under baseline
-
-        baseline: 
-            e.g. mean of flux (default), median of flux, quiescent background ...
-
-        lc_edges:
-            a) 'neglect'
-                single start and end times are neglected
-                incomplete flares (peaks without start or end time) are conservatively neglected
-            b) 'add'
-                single start and end times are neglected
-                if peak has no start/end it is artificially added in beginning/end of light curve
-
-        returns:
-            HOP groups, e.g. [[start, peak, end],[start, peak, end]]
-            (Note: all starts can be called with lc.start_times_bl, for example)
-        """
-        if baseline is None:
-            baseline = np.mean(self.flux)
-            self.baseline = np.mean(self.flux)
-            logging.info('use default baseline: mean(flux)')
-        else:
-            self.baseline = baseline
-
-        diff = np.diff(self.block_val)
-        peak_times = [] #time of all local peaks over baseline (in units of edges = units of time)
-        for i in range(1,len(diff)):
-            # if previous rising; this falling
-            if diff[i-1] > 0 and diff[i] < 0:
-                if self.block_val[i] > baseline:
-                    # peak_time = middle of peak block
-                    peak_times.append(self.edges[i] + (self.edges[i+1] - self.edges[i]) /2)
-        start_times = []  
-        end_times = []    
-        for i in range(len(self.block_val)-1):
-            # if this smaller; next one higher
-            if self.block_val[i] < baseline and self.block_val[i+1] > baseline:
-                start_times.append(self.edges[i+1])
-            # if this larger; next one lower
-            if self.block_val[i] > baseline and self.block_val[i+1] < baseline:
-                end_times.append(self.edges[i+1])
-        peak_times, start_times, end_times = self.handle_hops(
-            np.array(peak_times), np.array(start_times), np.array(end_times), lc_edges) 
-        if peak_times is None:
-            self.start_times_bl, self.end_times_bl = None, None
-            logging.warning('light curve is not variable enough; no hop found.')
-            return(None)
-        # baseline method could result in multiple peaks within one HOP 
-        # -> neglect smaller peak (not so senseful..)
-        while len(end_times) < len(peak_times):
-            for x,_ in enumerate(end_times):
-                if end_times[x] > peak_times[x+1]:
-                    if (self.block_val[self.bb_i(peak_times[x])] 
-                        < self.block_val[self.bb_i(peak_times[x+1])]):
-                            peak_times = np.delete(peak_times, x)
-                    elif (self.block_val[self.bb_i(peak_times[x])] 
-                    	  >= self.block_val[self.bb_i(peak_times[x+1])]):
-                            peak_times = np.delete(peak_times, x+1)
-                    logging.info('neglected double peak in HOP ' + str(x))
-                    break
-        self.peak_times_bl = peak_times
-        self.start_times_bl = start_times
-        self.end_times_bl = end_times
-        return(np.array([start_times, peak_times, end_times]).transpose())
-
-    #----------------------------------------------------------------------------------------------
-    def hop_procedure(self, method, lc_edges):
-        """
-        OTHER METHODS
-        Define flare as group of blocks (HOP group) with start, peak, and end time
-        Determine peak_time of flare to be at center of colal maxima of the blocks
-        Use .get_hop_method() analogous to .get_hop_baseline()
-        
-        method:
-            a) 'half'
-                Determine start/end of flare to be at center of valley block
-            b) 'flip'
-                Extrapolate behavior of flare by flipping adjacent block onto valley block
-                Note: half method is used to avoid overlap (i.e. when flip > 1/2 valley block)
-            c) 'sharp'
-                Neglect valley block
-
-        lc_edges:
-            a) 'neglect'
-                single start and end times are neglected
-                incomplete flares (peaks without start or end time) are conservatively neglected
-            b) 'add'
-                single start and end times are neglected
-                if peak has no start/end it is artificially added in beginning/end of light curve
-
-        returns:
-            HOP groups, e.g. [[start, peak, end],[start, peak, end]]
-            (Note: all starts can be called with lc.start_times_bl, for example)
-        """
-        diff = np.diff(self.block_val)
-        peak_times = [] # time of all local peaks (units of edges, i.e. units of time)
-        start_times = []
-        end_times = []
-        for i in range(1,len(diff)):
-            # peak = previous rising; this falling
-            if diff[i-1] > 0 and diff[i] < 0:
-                # peak_time = middle of peak block
-                peak_times.append(self.edges[i] + (self.edges[i+1] - self.edges[i]) /2)
-            # change = previous falling; this rising
-            if diff[i-1] < 0 and diff[i] > 0:
-                half_block_time = (self.edges[i+1] - self.edges[i]) / 2
-                if method == 'half':
-                    start_times.append(self.edges[i+1] - half_block_time)
-                    end_times.append(self.edges[i] + half_block_time)
-                if method == 'flip':
-                	#clap previous block onto change block
-                    clap_from_left = self.edges[i] - self.edges[i-1]
-                    #clap following block onto change block
-                    clap_from_right = self.edges[i+2] - self.edges[i+1]
-                    end_times.append(self.edges[i] 
-                    	             + np.minimum(half_block_time, clap_from_left))
-                    start_times.append(self.edges[i+1] 
-                    	               - np.minimum(half_block_time, clap_from_right))
-                if method == 'sharp':
-                    start_times.append(self.edges[i+1])
-                    end_times.append(self.edges[i])
-        return(self.handle_hops(np.array(peak_times), np.array(start_times),
-        	   np.array(end_times), lc_edges))
-                
-    def get_hop_half(self, lc_edges='neglect'):
-        self.peak_times, self.start_times_half, self.end_times_half = self.hop_procedure('half', lc_edges)
-        if self.peak_times is None:
-            logging.warning('light curve is not variable enough; no hop found.')
-            return(None)
-        else:
-            return((np.array([self.start_times_half, self.peak_times, self.end_times_half])).transpose())
-    
-    def get_hop_flip(self, lc_edges='neglect'):
-        self.peak_times, self.start_times_flip, self.end_times_flip = self.hop_procedure('flip', lc_edges)
-        if self.peak_times is None:
-            logging.warning('light curve is not variable enough; no hop found.')
-            return(None)
-        else:
-            return((np.array([self.start_times_flip, self.peak_times, self.end_times_flip])).transpose())
-    
-    def get_hop_sharp(self, lc_edges='neglect'):
-        self.peak_times, self.start_times_sharp, self.end_times_sharp = self.hop_procedure('sharp', lc_edges)
-        if self.peak_times is None:
-            logging.warning('light curve is not variable enough; no hop found.')
-            return(None)
-        else:
-            return((np.array([self.start_times_sharp, self.peak_times, self.end_times_sharp])).transpose())
-
     #----------------------------------------------------------------------------------------------
     def hop_around(self, gamma_value=None, p0_value=0.05, lc_edges='neglect'):
         """
         Initialize Bayesian blocks and all HOP methods with default settings in one go
         """
-        self.get_bblocks(gamma_value, p0_value)
-        self.get_hop_baseline(lc_edges=lc_edges) # necessary because of baseline argument
-        self.get_hop_half(lc_edges)
-        self.get_hop_flip(lc_edges)
-        self.get_hop_sharp(lc_edges)
-        logging.debug('hoppped around')
+        #self.get_bblocks(gamma_value, p0_value)
+        #self.get_hop_baseline(lc_edges=lc_edges) # necessary because of baseline argument
+        #self.get_hop_half(lc_edges)
+        #self.get_hop_flip(lc_edges)
+        #self.get_hop_sharp(lc_edges)
+        #logging.debug('hoppped around')
+        ...
 
     #----------------------------------------------------------------------------------------------
-    def plot_hop_by_time(self, start_times, end_times): 
+    def plot_hop_by_time(self, start_times, end_times, ax=None): 
         """
         Plot shaded area for given start and end times
         for example: lc.plot_hop_by_time(lc.start_times_flip, lc.end_times_flip) 
         """
         if start_times is None:
             return() # no hop found
+        if ax is None:
+            ax = plt.gca()
         for i,_ in enumerate(start_times):
             x = np.linspace(start_times[i], end_times[i])
             y = np.ones(len(x)) * np.max(self.flux)
             #y1 = np.zeros(len(x))
             y1 = np.min(self.flux)
             if i == 0:
-                plt.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2,
+                ax.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2,
                 	             label='hop', zorder=0)
             if i == 1:
-                plt.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, label='hop',
+                ax.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, label='hop',
                 	             zorder=0)
             elif i % 2:
-                plt.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, zorder=0)
+                ax.fill_between(x, y, y1, step="mid", color='orchid', alpha=0.2, zorder=0)
             elif i != 0:
-                plt.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, zorder=0)
+                ax.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, zorder=0)
 
-    def plot_hop(self, method = 'flip'):
+    def plot_hop(self, method = 'flip', ax=None):
         """
         Plot shaded area for given HOP method
         """
         if method == 'half':
-            self.plot_hop_by_time(self.start_times_half, self.end_times_half)
+            self.plot_hop_by_time(self.start_times_half, self.end_times_half, ax=ax)
         if method == 'flip':
-            self.plot_hop_by_time(self.start_times_flip, self.end_times_flip)
+            self.plot_hop_by_time(self.start_times_flip, self.end_times_flip, ax=ax)
         if method == 'sharp':
-            self.plot_hop_by_time(self.start_times_sharp, self.end_times_sharp)
+            self.plot_hop_by_time(self.start_times_sharp, self.end_times_sharp, ax=ax)
         if method == 'baseline':
-            self.plot_hop_by_time(self.start_times_bl, self.end_times_bl)
+            self.plot_hop_by_time(self.start_times_bl, self.end_times_bl, ax=ax)
             plt.hlines(self.baseline, xmin=np.min(self.time), xmax=np.max(self.time),
             	       color='deeppink', label='baseline', linewidth=1, zorder=100)
 
@@ -617,6 +376,24 @@ class LightCurve:
         return(self.ou_mu, self.ou_sigma, alpha_sign * alpha_value, self.ou_theta )
 
 
+    def find_hop(self, method='half', lc_edges='neglect', baseline=None):
+        if method == 'baseline':
+            if baseline is None:
+                self.baseline = np.mean(self.flux)
+            hopfinder = HopFinderBaseline(lc_edges)
+            return hopfinder.find(self)
+        if method == 'half':
+            hopfinder = HopFinderHalf(lc_edges)
+            return hopfinder.find(self)
+        if method == 'sharp':
+            hopfinder = HopFinderSharp(lc_edges)
+            return hopfinder.find(self)
+        if method == 'flip':
+            hopfinder = HopFinderFlip(lc_edges)
+            return hopfinder.find(self)
+
+
+
 
 ''' 
 FUTURE WORK:
@@ -637,4 +414,6 @@ FUTURE WORK:
         #TBD: Bernd
         ...
         return(p_value)
+
+    correlation
 '''

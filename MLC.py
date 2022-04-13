@@ -48,6 +48,9 @@ def make_multi_lcs(lcs_per_telescope, lc_ids=None, lc_labels=None):
 class MultiLC:
     def __init__(self, lc_list, lc_ids, lc_labels=None, name=None):
         """
+        MLC CLass
+        ---------
+        multiwavelength light curves of one source
         arguments:
         lc_list = list of LightCurve objects (lcs)
         lc_id = list of strings identifying each LC, eg ['fermi', 'xst', ...]
@@ -66,7 +69,7 @@ class MultiLC:
             
     #-----------------------------------------------------------------------------------------------
        
-    def plot_mlc(self, blocks=True, **kwargs):
+    def plot_mlc(self, bblocks=True, **kwargs):
         plt.rc('xtick', labelsize=15)
         ylen = 2 + self.n*2
         fig, self.axes = plt.subplots(self.n,1, figsize=(15,ylen), sharex=True)
@@ -74,7 +77,7 @@ class MultiLC:
         plt.suptitle(self.name, fontsize=20)
         for lc, lc_label, a in zip(self.lc_list, self.lc_labels, self.axes):
             plt.sca(a)
-            if blocks:
+            if bblocks:
                 #bblocks have to be individually initialized for each LC first
                 lc.plot_bblocks(**kwargs)
             else:
@@ -146,7 +149,7 @@ class MultiLC:
                 else:
                     continue
         else:
-            for value, a, lc, label in zip(values, self.axes, self.lcs, legend):
+            for value, a, lc, label in zip(values, self.axes, self.lc_list, legend):
                 plt.sca(a)
                 if value:
                     plt.hlines(value, xmin=np.min(lc.time), xmax=np.max(lc.time),
@@ -161,5 +164,5 @@ class MultiLC:
 ''' 
 FUTURE WORK:
     #-----------------------------------------------------------------------------------------------
-    
+    correlation
 '''

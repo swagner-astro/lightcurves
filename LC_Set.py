@@ -80,14 +80,17 @@ class LC_Set:
             if hops is None:
                 logging.info(str(i)+ ' no hop found; not variable enough')
                 continue #skip this lc
-            for hop in hops:
-                hopjects.append(Hopject(hop, lc)) #hop = hop_params (start, peak, end)
+            for hop_params in hops:
+                hop = Hopject(hop_params, lc) #hop = hop_params (start, peak, end)
+                hop.get_exp_fit()
+                hopjects.append(hop)
                 mom_lc.append(i)
         self.n_blocks = np.array([h.n_blocks for h in hopjects])
         mask = np.where(self.n_blocks > block_min)
         # eg one-block hop: n_blocks = end_block - start_block 
         #                            = 5 - 3 = 2 !> 2 (minimum blocks of hop)
 
+        # Patrick: lieber erst implementieren, wenns gebraucht wird bzw mit property decorator siehe unten
         self.mom_lc = np.array(mom_lc)[mask]
         self.hopjects = np.array(hopjects, dtype = object)[mask]
         self.dur = np.array([h.dur for h in hopjects])[mask]
@@ -101,6 +104,17 @@ class LC_Set:
         self.decay_flux = np.array([h.decay_flux for h in hopjects])[mask]
         self.z = np.array([h.z for h in hopjects])[mask]
 
+        #self.exp_tr = np.array([h.exp_tr for h in hopjects if not h.exp_tr is None])[mask]
+        self.exp_td = np.array([h.exp_td for h in hopjects])[mask]
+        self.exp_amp = np.array([h.exp_amp for h in hopjects])[mask]
+        self.exp_t0 = np.array([h.exp_t0 for h in hopjects])[mask]
+        self.exp_chisqr = np.array([h.exp_chisqr for h in hopjects])[mask]
+        self.exp_redchi = np.array([h.exp_redchi for h in hopjects])[mask]
+
+    @property
+    def exp_tr(self):
+        return np.array([h.exp_tr for h in hopjects])[mask]
+    
     #----------------------------------------------------------------------------------------------
     def zcor(self, times): #times = e.g. LC_Set.dur
         if len(np.where(np.isnan(self.z) == True)[0]) > 0:
@@ -127,6 +141,9 @@ class LC_Set:
             histo, fancy_bins, p = fancy_hist(self.dur, bins='knuth', density=dens, edgecolor='k',
                                               color='limegreen')
     
+    #----------------------------------------------------------------------------------------------
+
+
     """
     #----------------------------------------------------------------------------------------------
     def scatter_plot(dF,dt)
