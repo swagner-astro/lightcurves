@@ -41,6 +41,7 @@ def fix_data(time, flux, flux_error):
     logging.info('Deleted ' + str(len(time_) - len(unique_time)) + ' time duplicates')
     return(unique_time, good_flux, good_flux_error)
 
+
 def get_gti_iis(time, n_gaps, n_pick):
     # get index of good time intervals (divide LC into secitons in case there are n_gaps gaps in data; like FACT)
     # biggest time gaps (length in s) in chronological order
@@ -86,19 +87,18 @@ class LightCurve:
     ------------------
     Create a light curve based on input data: time, flux, flux_error
     """
-    def __init__(self, time, flux, flux_error, name=None, z=None, telescope=None):
+    def __init__(self, time, flux, flux_error, name=None, z=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
+        self.name = name
+        self.z = z
         if len(time) != len(flux) or len(time) != len(flux_error):
             raise ValueError('Input arrays do not have same length')
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
             raise TypeError('flux or flux_error contain np.nan values')
         if len(time) != len(np.unique(time)):
             raise ValueError('time contains duplicate values')
-        self.name = name
-        self.z = z
-        self.telescope = telescope
 
     def plot_lc(self, data_color='k', ax=None, **kwargs):
         if ax is None:
