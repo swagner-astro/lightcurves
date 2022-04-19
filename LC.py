@@ -231,6 +231,8 @@ class LightCurve:
         if method == 'baseline':
             if baseline is None:
                 self.baseline = np.mean(self.flux)
+            else:
+                self.baseline = baseline
             hopfinder = HopFinderBaseline(lc_edges)
         if method == 'half':
             hopfinder = HopFinderHalf(lc_edges)
@@ -271,7 +273,7 @@ class LightCurve:
         """
         Plot all HOP methods in one figure for comparison
         """
-        fig = plt.figure(0,(15,7))
+        fig = plt.figure(0,(15,9))
         plt.suptitle('All HOP methods', fontsize=16)
 
         ax0 = fig.add_subplot(511)
