@@ -4,8 +4,45 @@ from lightcurves.HOP import Hopject
 
 import logging
 logging.basicConfig(level=logging.ERROR)
+"""
+set logging to the desired level
+logging options:
+DEBUG:      whatever happens will be thrown at you
+INFO:       confirmation that things are working as expected
+WARNING:    sth unexpected happened
+ERROR:      sth didn't work, abort mission
+""" 
 
 class HopFinder():
+    """
+    This is an abstract class that resembles an interface. i.e.
+    methods that don't do anything but have to be overwritten with 
+    children (inheriting classes):
+        - HopFinderBaseline
+        - HopFinderProcedure
+    
+    An object inherited from HopFinder can be used to characterize flares, i.e.
+    determine start, peak and end time, based on Bayesian blocks with different methods:
+        1. baseline:
+            Original method as described in Meyer et al. 2019
+            https://ui.adsabs.harvard.edu/abs/2019ApJ...877...39M/abstract 
+        2. half:
+            Start/end is at center of valley block
+        3. sharp:
+            Neglect valley block
+        4. flip:
+            Extrapolate flare behavior
+
+    lc_edges:
+        a) 'neglect'
+            single start and end times are neglected
+            incomplete flares (peaks without start or end time) are conservatively neglected
+        b) 'add'
+            single start and end times are neglected
+            if peak has no start/end it is artificially added in beginning/end of light curve
+
+    returns: list of Hopjects, see HOP.py
+    """
     def __init__(self, lc_edges='neglect'):
         self.lc_edges = lc_edges
 
@@ -34,6 +71,16 @@ class HopFinder():
         return hops
 
     def clean(self, peaks, starts, ends, lc):
+        """
+        Handle mismatches and issues with peak_time, start_time, and end_time combinations
+        lc_edges:
+            a) neglect:
+                single start and end times are neglected
+                peaks without start or end time are neglected
+            b) add:
+                single start and end times are neglected
+                peaks without start/end: start/end is added in beginning/end of light curve
+        """
         if len(peaks) < 1:
             logging.info('not variable enough, no peak found')
             return(None, None, None) 
@@ -123,6 +170,15 @@ class HopFinder():
 
 #----------------------------------------------------------------------------------------------
 class HopFinderBaseline(HopFinder):
+    """
+    BASELINE METHOD
+        see Meyer et al. 2019 https://ui.adsabs.harvard.edu/abs/2019ApJ...877...39M/abstract
+        Determine peak_time of flare to be at center of colal maxima of the blocks
+        Determine start_time/end_time to be where flux exceeds/goes under baseline
+
+    lc.baseline: 
+        e.g. mean of flux (default), median of flux, quiescent background ...
+    """
     def find_peaks(self, lc):
         diff = np.diff(lc.block_val)
         peaks = [] #time of all local peaks over baseline (in units of edges = units of time)
@@ -148,6 +204,17 @@ class HopFinderBaseline(HopFinder):
 
 #----------------------------------------------------------------------------------------------
 class HopFinderProcedure(HopFinder):
+    """
+    This is another abstract class that resembles an interface. i.e.
+    methods that don't do anything but have to be overwritten with 
+    children (inheriting classes):
+            - HopFinderHalf
+            - HopFinderFlip
+            - HopFinderSharp
+
+    Determine peak_time of flare to be at center of colal maxima of the blocks
+    Use self.change_point() to determine start and end_time depending on method             
+    """
     def find_peaks(self, lc):
         diff = np.diff(lc.block_val)
         peaks = [] # time of all local peaks (units of edges, i.e. units of time)
@@ -175,11 +242,18 @@ class HopFinderProcedure(HopFinder):
 
 #----------------------------------------------------------------------------------------------
 class HopFinderHalf(HopFinderProcedure):
+    """
+    Determine start/end of flare to be at center of valley block
+    """
     def change_point(self, edges, i):
         half_block_time = (edges[i+1] - edges[i]) / 2
         return edges[i+1] - half_block_time, edges[i] + half_block_time
 
 class HopFinderFlip(HopFinderProcedure):
+    """
+    Extrapolate behavior of flare by flipping adjacent block onto valley block
+    Note: half method is used to avoid overlap (i.e. when flip > 1/2 valley block)
+    """
     def change_point(self, edges, i):
         half_block_time = (edges[i+1] - edges[i]) / 2
         #clap previous block onto change block
@@ -191,6 +265,9 @@ class HopFinderFlip(HopFinderProcedure):
         return s,e
 
 class HopFinderSharp(HopFinderProcedure):
+    """
+    Neglect valley block
+    """
     def change_point(self, edges, i):
         return edges[i+1], edges[i]
 
