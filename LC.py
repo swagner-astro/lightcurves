@@ -107,6 +107,11 @@ class LightCurve:
                      elinewidth=1, linewidth=0, marker='+', markersize=3, 
                      color=data_color, **kwargs)
 
+    def plot_hline(self, value, ax=None, **kwargs):
+    	if ax is None:
+            ax = plt.gca()
+        ax.hlines(value, xmin=min(self.time), xmax=max(self.time), **kwargs)
+
     #----------------------------------------------------------------------------------------------
     def get_bblocks(self, gamma_value=None, p0_value=0.05): 
         """
