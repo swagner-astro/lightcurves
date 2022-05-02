@@ -87,12 +87,13 @@ class LightCurve:
     ------------------
     Create a light curve based on input data: time, flux, flux_error
     """
-    def __init__(self, time, flux, flux_error, name=None, z=None):
+    def __init__(self, time, flux, flux_error, name=None, z=None, telescope=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
         self.name = name
         self.z = z
+        self.telescope = telescope
         if len(time) != len(flux) or len(time) != len(flux_error):
             raise ValueError('Input arrays do not have same length')
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
@@ -108,7 +109,7 @@ class LightCurve:
                      color=data_color, **kwargs)
 
     def plot_hline(self, value, ax=None, **kwargs):
-    	if ax is None:
+        if ax is None:
             ax = plt.gca()
         ax.hlines(value, xmin=min(self.time), xmax=max(self.time), **kwargs)
 
@@ -307,98 +308,3 @@ class LightCurve:
         fig.subplots_adjust(hspace=0)
 
 
-    #-----------------------------------------------------------------------------------------------
-    def get_ou(self, sigma_sigma=0.343, sigma_alpha=1.48):
-        """
-        Interpret light curve as exponentiated Ornstein-Uhlenbeck process:
-         -> https://ui.adsabs.harvard.edu/abs/1930PhRv...36..823U/abstract
-        Extract characteristic OU parameters mu, simga, theta according to:
-         -> Burd et al. 2020, https://ui.adsabs.harvard.edu/abs/2021A%26A...645A..62B/abstract
-         -> and Kohlepp 2021, https://www.physik.uni-wuerzburg.de/fileadmin/11030400/bachelor_thesis_kohlhepp.pdf
-        Implementation adapted from:
-         -> https://github.com/PRBurd/astro-wue
-        
-        arguments:
-        sigma_sigma = size of epsilon environment to extract sigma and abs(theta)
-        sigma_alpha = size of epsilon environment to extract sign of theta
-         -> see Kohlepp 2021 for determination of the default parameters
-        
-        returns:
-        mu = mean revision nlevel = expectation value
-        sigma = sigma * sqrt(dt) = randomness/innovation
-        theta = theta * dt = mean revision rate
-         -> see references above to get more information
-        """
-        
-        # Assumption: lc flux is exponentiated time series (we analyze the latter)
-        if len(np.where(self.flux < 0)[0]) > 0 or len(self.flux)<4:
-            self.ou_mu = None
-            self.ou_sigma = None
-            self.ou_theta = None
-            #raise ValueError('Flux contains negative values, cannot take np.log10()')
-            print('Flux contains negative values, cannot take np.log10()')
-            return None
-        data = np.log10(self.flux) # time series = OU
-        # adding a random buffer to make flux positive results in different parameters - bäh!
-        
-        # mu = mean revision nlevel 
-        # -> simply the expectation value = mean of time series
-        # -> Note: this is meaningless if buffer != 0
-        #self.ou_mu = np.mean(data)
-        self.ou_mu = np.mean(data)
-        
-        # sigma = randomness/innovation 
-        # -> consider data points close to mean (within standard deviation * sigma_sigma)
-        # -> assumption: difference to next data point is due to randomness of OU process
-        # -> variance of these differences resembles ou_sigma
-        std = np.std(data)
-        close_mask = np.array(data > (self.ou_mu - sigma_sigma * std), dtype=bool) *\
-                     np.array(data < (self.ou_mu + sigma_sigma * std), dtype=bool)
-        close_mask_diff = np.delete(close_mask, -1) 
-        diff = np.diff(data)
-        self.ou_sigma = np.std(diff[close_mask_diff]) #= sigma * sqrt(dt)
-        
-        # theta = mean revision rate = friction coefficient/tensor = 1 - alpha
-        # -> value of alpha is computed according to equation 2.14 in Kohlepp 2021
-        # -> sign of alpha is computed according to equation 2.15e in Kohlepp 2021
-        alpha_value = np.sqrt(np.abs(1 - (self.ou_sigma**2 / np.var(data))))
-        pos = np.array(data > (self.ou_mu - sigma_alpha * std), dtype=bool) *\
-              np.array(data < (self.ou_mu + sigma_alpha * std), dtype=bool)
-        # discards last element (no u_T+1 would exist)
-        pos[-1] = False
-        # positions of u_T+1 (shift positions by +1)
-        pos1 = np.zeros(len(pos), dtype=bool)
-        pos1[1:] = pos[:-1]    
-        alphas = (data[pos1] - self.ou_mu)/(data[pos] - self.ou_mu)
-        alpha_sign = np.sign(np.mean(alphas))
-        self.ou_theta = 1 - (alpha_sign * alpha_value)  #= theta * dt
-        return(self.ou_mu, self.ou_sigma, alpha_sign * alpha_value, self.ou_theta )
-
-
-
-
-
-
-
-''' 
-FUTURE WORK:
-    #-----------------------------------------------------------------------------------------------
-    def get_psd(self):
-    	self.psd_slope = ...
-    	return(psd_slope)
-
-    def plot_psd(self):
-    	plot se psd
-    
-    def get_Fvar():
-        #TBD: Bernd
-        ...
-        return(F_var, F_var_error)
-    
-    def is_constant():
-        #TBD: Bernd
-        ...
-        return(p_value)
-
-    correlation see Abhir 2021
-'''

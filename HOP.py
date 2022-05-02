@@ -2,18 +2,6 @@ import numpy as np
 from lmfit import Model #https://lmfit.github.io/lmfit-py/
 from matplotlib import pyplot as plt
 
-#from lightcurves.LC import LightCurve
-
-"""
-# from LC_Set
-def zcor(self, times): #times = e.g. LC_Set.dur
-        if len(np.where(np.isnan(self.z) == True)[0]) > 0:
-            print('Error: not all LCs have a redshift')
-        else:
-            times_intr = times / (1 + self.z)
-            return(times_intr)
-"""
-
 class Hopject: 
     '''
     HOP Class
@@ -22,7 +10,6 @@ class Hopject:
     For definition of start, peak and end of the flare check out the LightCurve class
     '''
     def __init__(self, hop_params, lc, method=None): #e.g. Hopject(lc.get_hop_method[0], lc)
-        #self._start_time, self._peak_time, self._end_time = hop_params
         self.start_time, self.peak_time, self.end_time = hop_params        
         self.lc = lc
         self.z = lc.z
@@ -47,8 +34,6 @@ class Hopject:
         self.start_flux = lc.block_val[lc.bb_i_start(self.start_time)]
         self.peak_flux = lc.block_val[lc.bb_i(self.peak_time)]
         self.end_flux = lc.block_val[lc.bb_i_end(self.end_time)]
-        #attention: bb_i has bugs for baseline method
-        # in case of baseline 
         self.rise_flux = self.peak_flux - self.start_flux
         self.decay_flux = self.peak_flux - self.end_flux
 
@@ -131,8 +116,4 @@ class Hopject:
             ax = plt.gca()
         ax.plot(x_plot,y_plot, marker='', zorder=13148, **plot_kwargs)
         return()
-
-    #----------------------------------------------------------------------------------------------
-    
-
 

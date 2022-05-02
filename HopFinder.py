@@ -271,10 +271,3 @@ class HopFinderSharp(HopFinderProcedure):
     def change_point(self, edges, i):
         return edges[i+1], edges[i]
 
-
-"""
-FUTURE WORK:
-    #-----------------------------------------------------------------------------------------------
-     -> implement a more reasonable Baseline method (i.e. treat multiple peaks different)
-"""
-
