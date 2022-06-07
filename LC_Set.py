@@ -81,8 +81,8 @@ class LC_Set:
                 logging.info(str(i)+ ' no hop found; not variable enough')
                 continue #skip this lc
             for hop in hops:
-                #hop = Hopject(hop_params, lc) #hop = hop_params (start, peak, end) OLD
-                hop.get_exp_fit()
+                if len(hop.flux) > 3:
+                    hop.get_exp_fit()
                 hopjects.append(hop)
                 mom_lc.append(i)
         self.n_blocks = np.array([h.n_blocks for h in hopjects])
