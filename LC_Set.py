@@ -68,15 +68,15 @@ class LC_Set:
             logging.debug(str(i))
             #optional: multiprocessing for hoparound of each lc here
             if hop_method == 'baseline' and baseline == 'mean':
-                hops = lc.get_hop_baseline(np.mean(lc.flux),lc_edges)
+                hops = lc.find_hop('baseline', np.mean(lc.flux), lc_edges)
             elif hop_method == 'baseline':
-                hops = lc.get_hop_bl(baseline,lc_edges)
+                hops = lc.find_hop('baseline', lc_edges)
             elif hop_method == 'half':
-                hops = lc.get_hop_half(lc_edges)
+                hops = lc.find_hop('half', lc_edges)
             elif hop_method == 'flip':
-                hops = lc.get_hop_flip(lc_edges)
+                hops = lc.find_hop('flip', lc_edges)
             elif hop_method == 'sharp':
-                hops = lc.get_hop_sharp(lc_edges)
+                hops = lc.find_hop('sharp', lc_edges)
             if hops is None:
                 logging.info(str(i)+ ' no hop found; not variable enough')
                 continue #skip this lc

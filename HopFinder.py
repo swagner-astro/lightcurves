@@ -216,7 +216,7 @@ class HopFinderProcedure(HopFinder):
     Use self.change_point() to determine start and end_time depending on method             
     """
     def find_peaks(self, lc):
-        diff = np.diff(lc.block_val)
+        diff = np.diff(lc.block_val) # get_bblocks() needs to be done first
         peaks = [] # time of all local peaks (units of edges, i.e. units of time)
         for i in range(1,len(diff)):
             # peak = previous rising; this falling
@@ -231,7 +231,7 @@ class HopFinderProcedure(HopFinder):
     def find_start_end(self, lc):
         starts = []
         ends = []
-        diff = np.diff(lc.block_val)
+        diff = np.diff(lc.block_val) # get_bblocks() needs to be done first
         for i in range(1,len(diff)):
             # change = previous falling; this rising
             if diff[i-1] < 0 and diff[i] > 0: 
