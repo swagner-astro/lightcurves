@@ -80,8 +80,8 @@ class LC_Set:
             if hops is None:
                 logging.info(str(i)+ ' no hop found; not variable enough')
                 continue #skip this lc
-            for hop_params in hops:
-                hop = Hopject(hop_params, lc) #hop = hop_params (start, peak, end)
+            for hop in hops:
+                #hop = Hopject(hop_params, lc) #hop = hop_params (start, peak, end) OLD
                 hop.get_exp_fit()
                 hopjects.append(hop)
                 mom_lc.append(i)
