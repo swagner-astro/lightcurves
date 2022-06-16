@@ -21,12 +21,18 @@ Initialize a (large) sample of light curves to study the distribution of flare p
 
 
 If you use this code please cite: <br>
-@article{Wagner:2021jn,
-  author = "Wagner, Sarah M.  and  Burd, Paul  and  Dorner, Daniela  and  Mannheim, Karl  and  Buson, Sara  and  Gokus, Andrea  and  Madejski, Greg  and  Scargle, Jeffrey  and  Arbet-Engels, Axel  and  Baack, Dominik  and  Balbo, Matteo  and  Biland, Adrian  and  Bretz, Thomas  and  Buss, Jens  and  Elsaesser, Dominik  and  Eisenberger, Laura  and  Hildebrand, Dorothee  and  Iotov, Roman  and  Kalenski, Adelina  and  Neise, Dominik  and  Noethe, Maximilian  and  Paravac, Aleksander  and  Rhode, Wolfgang  and  Schleicher, Bernd  and  Sliusar, Vitalii  and  Walter, Roland",
-  title = "{Statistical properties of flux variations in blazar light curves at GeV and TeV energies}",
-  doi = "10.22323/1.395.0868",
-  journal = "PoS",
-  year = 2021,
-  volume = "ICRC2021",
-  pages = "868"
+@INPROCEEDINGS{2022icrc.confE.868W,
+       author = {{Wagner}, S.~M. and {Burd}, P. and {Dorner}, D. and {Mannheim}, K. and {Buson}, S. and {Gokus}, A. and {Madejski}, G. and {Scargle}, J. and {Arbet-Engels}, A. and {Baack}, D. and {Balbo}, M. and {Biland}, A. and {Bretz}, T. and {Buss}, J. and {Elsaesser}, D. and {Eisenberger}, L. and {Hildebrand}, D. and {Iotov}, R. and {Kalenski}, A. and {Neise}, D. and {Noethe}, M. and {Paravac}, A. and {Rhode}, W. and {Schleicher}, B. and {Sliusar}, V. and {Walter}, R.},
+        title = "{Statistical properties of flux variations in blazar light curves at GeV and TeV energies}",
+     keywords = {Astrophysics - High Energy Astrophysical Phenomena},
+    booktitle = {37th International Cosmic Ray Conference. 12-23 July 2021. Berlin},
+         year = 2022,
+        month = mar,
+          eid = {868},
+        pages = {868},
+archivePrefix = {arXiv},
+       eprint = {2110.14797},
+ primaryClass = {astro-ph.HE},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2022icrc.confE.868W},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
