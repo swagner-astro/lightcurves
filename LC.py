@@ -107,7 +107,7 @@ class LightCurve:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
 
-    def plot_lc(self, data_color='k', ax=None, new_time_format='isot', size=1, **kwargs):
+    def plot_lc(self, data_color='k', ax=None, new_time_format=None, size=1, **kwargs):
         if ax is None:
             ax = plt.gca()
         ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
@@ -208,7 +208,7 @@ class LightCurve:
 
     #----------------------------------------------------------------------------------------------
     def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux',
-                     size=1, ax=None, new_time_format='isot'):
+                     size=1, ax=None, new_time_format=None):
         if ax is None:
                 ax = plt.gca()
         try:   
