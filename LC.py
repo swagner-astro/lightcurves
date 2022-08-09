@@ -117,6 +117,7 @@ class LightCurve:
             axtop = ax.twiny()
             axtop.set_xticks(ax.get_xticks())
             axtop.set_xbound(ax.get_xbound())
+            axtop.set_xlim(ax.get_xlim())
             format_labels = astropy.time.Time([t for t in ax.get_xticks()], format=self.time_format)
             if new_time_format == 'isot': 
                 new_labels = [format_labels.to_value(format='isot')[i].split('T')[0] for i in range(len(format_labels))]
