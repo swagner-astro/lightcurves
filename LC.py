@@ -88,7 +88,7 @@ class LightCurve:
     ------------------
     Create a light curve based on input data: time, flux, flux_error
     """
-    def __init__(self, time, flux, flux_error, time_format=None, name=None, z=None, telescope=None):
+    def __init__(self, time, flux, flux_error, time_format=None, name=None, z=None, telescope=None, cadence=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
@@ -96,6 +96,7 @@ class LightCurve:
         self.name = name
         self.z = z
         self.telescope = telescope
+        self.cadence = cadence
         if len(time) != len(flux) or len(time) != len(flux_error):
             raise ValueError('Input arrays do not have same length')
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
