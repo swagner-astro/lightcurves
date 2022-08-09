@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import astropy.stats.bayesian_blocks as bblocks
 #https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
+import astropy
 from lightcurves.HopFinder import *
 
 import logging
@@ -87,10 +88,11 @@ class LightCurve:
     ------------------
     Create a light curve based on input data: time, flux, flux_error
     """
-    def __init__(self, time, flux, flux_error, name=None, z=None, telescope=None):
+    def __init__(self, time, flux, flux_error, time_format=None, name=None, z=None, telescope=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
+        self.time_format = time_format
         self.name = name
         self.z = z
         self.telescope = telescope
@@ -100,13 +102,30 @@ class LightCurve:
             raise TypeError('flux or flux_error contain np.nan values')
         if len(time) != len(np.unique(time)):
             raise ValueError('time contains duplicate values')
+        if time_format:
+            """ format of the astropy.time.Time object """
+            self.astropy_time = astropy.time.Time(time, format=time_format)
 
-    def plot_lc(self, data_color='k', ax=None, **kwargs):
+    def plot_lc(self, data_color='k', ax=None, new_time_format='isot', size=1, **kwargs):
         if ax is None:
             ax = plt.gca()
         ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, ecolor=data_color, 
-                     elinewidth=1, linewidth=0, marker='+', markersize=3, 
+                     elinewidth=1, linewidth=0, marker='+', markersize=3*size, 
                      color=data_color, **kwargs)
+        if self.time_format and new_time_format is not None:
+            axtop = ax.twiny()
+            axtop.set_xticks(ax.get_xticks())
+            axtop.set_xbound(ax.get_xbound())
+            format_labels = astropy.time.Time([t for t in ax.get_xticks()], format=self.time_format)
+            if new_time_format == 'isot': 
+                new_labels = [format_labels.to_value(format='isot')[i].split('T')[0] for i in range(len(format_labels))]
+                axtop.set_xticklabels(new_labels) #= yyyy-mm-dd
+            elif new_time_format == 'decimalyear':
+                new_labels = format_labels.to_value(format='decimalyear')
+                axtop.set_xticklabels(np.round(new_labels, 1)) #= yyyy.y
+            else:
+                new_labels = format_labels.to_value(format=new_time_format)
+                axtop.set_xticklabels(new_labels)
 
     def plot_hline(self, value, ax=None, **kwargs):
         if ax is None:
@@ -188,15 +207,17 @@ class LightCurve:
 
     #----------------------------------------------------------------------------------------------
     def plot_bblocks(self, bb_color='steelblue', data_color='k', data_label='obs flux',
-                     size=1, ax=None):
+                     size=1, ax=None, new_time_format='isot'):
         if ax is None:
                 ax = plt.gca()
         try:   
             ax.step(self.time, self.block_pbin, where='mid', linewidth=1*size, label='bblocks', 
             	     color=bb_color, zorder=1000)
-            ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
-            	         ecolor=data_color, elinewidth=1*size, linewidth=0, marker='+', 
-                         markersize=3*size, color=data_color)
+            #ax.errorbar(x=self.time, y=self.flux, yerr=self.flux_error, label=data_label, 
+            # 	         ecolor=data_color, elinewidth=1*size, linewidth=0, marker='+', 
+            #             markersize=3*size, color=data_color)
+            self.plot_lc(data_color=data_color, ax=ax, label=data_label, 
+                         new_time_format=new_time_format, size=size)
         except AttributeError:
             raise AttributeError('Initialize Bayesian blocks with .get_bblocks() first!')
 
