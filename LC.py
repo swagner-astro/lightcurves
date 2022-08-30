@@ -128,6 +128,7 @@ class LightCurve:
             else:
                 new_labels = format_labels.to_value(format=new_time_format)
                 axtop.set_xticklabels(new_labels)
+            plt.sca(ax) #go back to initial bottom axis
 
     def plot_hline(self, value, ax=None, **kwargs):
         if ax is None:
