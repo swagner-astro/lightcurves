@@ -16,11 +16,10 @@ Initialize a Hopject to consider parameters of an individual flare.
 Initialize a (large) sample of light curves to study the distribution of flare parameters whithin that sample.<br>
 
 
-
-
-
-
+## Reference
 If you use this code please cite: <br>
+<url>https://ui.adsabs.harvard.edu/abs/2022icrc.confE.868W/abstract</url>
+
 @INPROCEEDINGS{2022icrc.confE.868W,
        author = {{Wagner}, S.~M. and {Burd}, P. and {Dorner}, D. and {Mannheim}, K. and {Buson}, S. and {Gokus}, A. and {Madejski}, G. and {Scargle}, J. and {Arbet-Engels}, A. and {Baack}, D. and {Balbo}, M. and {Biland}, A. and {Bretz}, T. and {Buss}, J. and {Elsaesser}, D. and {Eisenberger}, L. and {Hildebrand}, D. and {Iotov}, R. and {Kalenski}, A. and {Neise}, D. and {Noethe}, M. and {Paravac}, A. and {Rhode}, W. and {Schleicher}, B. and {Sliusar}, V. and {Walter}, R.},
         title = "{Statistical properties of flux variations in blazar light curves at GeV and TeV energies}",
