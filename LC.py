@@ -116,6 +116,25 @@ class LightCurve:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
 
+    def __getitem__(self, inbr):
+        """
+        overwriting getitem method to access
+        * one LC bin like: lc[i]
+        * a slice of an LC (= return new LC) like: lc[i:ii]
+        """
+        if type(inbr) is int:
+            return np.array([self.time[inbr], self.flux[inbr], self.flux_error[inbr]])
+        elif type(inbr) is slice: 
+            return LightCurve(self.time[inbr], self.flux[inbr], 
+                              self.flux_error[inbr], self.time_format, 
+                              self.name, self.z, self.telescope, self.cadence)
+
+    def select_by_time(self, t_min, t_max):
+        # select certain part of the light curve based on start and end TIME
+        i_s = np.where(self.time >= t_min)[0][0]
+        i_e = np.where(self.time >= t_max)[0][0]
+        return self.__getitem__(slice(i_s, i_e, None))
+
     def save_npy(self, path):
         """
         save LC as numpy arraw with pickle
