@@ -173,6 +173,19 @@ class LightCurve:
             ax = plt.gca()
         ax.hlines(value, xmin=min(self.time), xmax=max(self.time), **kwargs)
 
+    def plot_vline(self, value, ax=None, **kwargs):
+        if ax is None:
+            ax = plt.gca()
+        ax.vlines(value, ymin=min(self.flux), ymax=max(self.flux), **kwargs)
+
+    def plot_shade(self, start_time, end_time, ax=None, **kwargs):
+        if ax is None:
+            ax = plt.gca()
+        x = np.linspace(start_time, end_time)
+        y = np.ones(len(x)) * np.max(self.flux)
+        y1 = np.ones(len(x)) * np.min(self.flux)
+        ax.fill_between(x, y, y1, step="mid", alpha=0.2, zorder=0, **kwargs)
+
     #----------------------------------------------------------------------------------------------
     def get_bblocks(self, gamma_value=None, p0_value=0.05): 
         """
