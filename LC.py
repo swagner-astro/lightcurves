@@ -1,9 +1,10 @@
 
 import numpy as np 
 from matplotlib import pyplot as plt
+import pickle
+import astropy
 import astropy.stats.bayesian_blocks as bblocks
 #https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
-import astropy
 from lightcurves.HopFinder import *
 
 import logging
@@ -17,6 +18,13 @@ WARNING:    sth unexpected happened
 ERROR:      sth didn't work, abort mission
 """ 
 
+def load_lc_npy(path):
+    """
+    to load LCs that are saved as numpy array through pickle with lc.save_npy()
+    ATTENTION: LC.py does not ge updated! 
+    """
+    pickle_file = open(path, "rb") #open file and read bytes
+    return pickle.load(pickle_file)
 
 def flux_puffer(flux, threshold, threshold_error):
     """
@@ -88,7 +96,8 @@ class LightCurve:
     ------------------
     Create a light curve based on input data: time, flux, flux_error
     """
-    def __init__(self, time, flux, flux_error, time_format=None, name=None, z=None, telescope=None, cadence=None):
+    def __init__(self, time, flux, flux_error, time_format=None, name=None, z=None, 
+                 telescope=None, cadence=None):
         self.time = np.array(time)
         self.flux = np.array(flux)
         self.flux_error = np.array(flux_error)
@@ -106,6 +115,16 @@ class LightCurve:
         if time_format:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
+
+    def save_npy(self, path):
+        """
+        save LC as numpy arraw with pickle
+        to open this see load_lc_npy() at top 
+        ATTENTION: LC.py does not ge updated! 
+        """
+        pickle_file = open(path,"wb") #open file and write in bytes
+        pickle.dump(self, pickle_file)
+        pickle_file.close()
 
     def plot_lc(self, data_color='k', ax=None, new_time_format=None, size=1, **kwargs):
         if ax is None:
