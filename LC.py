@@ -116,11 +116,19 @@ class LightCurve:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
 
+    def __repr__(self):
+        #this is everything you need to know about this instance (eg used for == method)
+        # __str__() draws from this (eg used for print)
+        return f'LightCurve (bins = {len(self.flux)}, name = {self.name}, '+ \
+               f'cadende = {self.cadence}, telescope = {self.telescope}, z = {self.z})'
+               #could be extended to make 100% sure this is unambiguous (eg with bblocks)
+
     def __getitem__(self, inbr):
         """
         overwriting getitem method to access
         * one LC bin like: lc[i]
         * a slice of an LC (= return new LC) like: lc[i:ii]
+        * selected bins of an LC like: lc[[i1, i2, i3, i4]]
         """
         if type(inbr) is int:
             return np.array([self.time[inbr], self.flux[inbr], self.flux_error[inbr]])
@@ -128,6 +136,9 @@ class LightCurve:
             return LightCurve(self.time[inbr], self.flux[inbr], 
                               self.flux_error[inbr], self.time_format, 
                               self.name, self.z, self.telescope, self.cadence)
+        elif type(inbr) is list:
+            #can't be implemented with 'int or list' -> confusion with slice
+            return np.array([self.time[inbr], self.flux[inbr], self.flux_error[inbr]])
 
     def select_by_time(self, t_min, t_max):
         # select certain part of the light curve based on start and end TIME
