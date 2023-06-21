@@ -105,7 +105,7 @@ class LC_Set:
         self.z = np.array([h.z for h in hopjects])[mask]
 
         #self.exp_tr = np.array([h.exp_tr for h in hopjects if not h.exp_tr is None])[mask]
-        self.exp_td = np.array([h.exp_td for h in hopjects])[mask]
+        #self.exp_td = np.array([h.exp_td for h in hopjects])[mask]
         self.exp_amp = np.array([h.exp_amp for h in hopjects])[mask]
         self.exp_t0 = np.array([h.exp_t0 for h in hopjects])[mask]
         self.exp_chisqr = np.array([h.exp_chisqr for h in hopjects])[mask]
