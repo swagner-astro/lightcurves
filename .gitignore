@@ -2,3 +2,4 @@ __pycache__/*
 .DS_Store
 pypi/*
 pypi_test/*
+.ipynb_checkpoints/*
