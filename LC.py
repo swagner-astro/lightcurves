@@ -122,6 +122,9 @@ class LightCurve:
         return f'LightCurve (bins = {len(self.flux)}, name = {self.name}, '+ \
                f'cadende = {self.cadence}, telescope = {self.telescope}, z = {self.z})'
                #could be extended to make 100% sure this is unambiguous (eg with bblocks)
+    
+    def __len__(self):
+        return len(self.time)
 
     def __getitem__(self, inbr):
         """
