@@ -200,6 +200,14 @@ class LightCurve:
         y1 = np.ones(len(x)) * np.min(self.flux)
         ax.fill_between(x, y, y1, step="mid", alpha=0.2, zorder=0, **kwargs)
 
+    def plot_grid(self, spacing=10, ax=None, **kwargs):
+        if ax is None:
+            ax = plt.gca()
+        rounded_start = np.round(np.min(self.time)/spacing) * spacing
+        rounded_end = np.round(np.max(self.time)/spacing) * spacing
+        ax.set_xticks(np.arange(rounded_start, rounded_end, spacing), minor=True)
+        ax.grid(which='minor', **kwargs)
+
     #----------------------------------------------------------------------------------------------
     def get_bblocks(self, gamma_value=None, p0_value=0.05): 
         """
