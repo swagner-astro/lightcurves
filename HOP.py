@@ -38,18 +38,19 @@ class Hopject:
         self.decay_flux = self.peak_flux - self.end_flux
 
     #----------------------------------------------------------------------------------------------
-    def plot_hop(self, ax=None):
+    def plot_hop(self, ax=None, color='lightsalmon', alpha=0.2, label='hop', **kwargs):
         """
         Plot the snip of light curve with this flare
         """
         if ax is None:
             ax = plt.gca()
+        self.lc.plot_lc(ax=ax)
         self.lc.plot_bblocks(ax=ax)
         ax.set_xlim(self.start_time - self.dur/2, self.end_time + self.dur/2)
         x = np.linspace(self.start_time, self.end_time)
         y = np.ones(len(x)) * self.peak_flux
         y1 = np.zeros(len(x))
-        ax.fill_between(x, y, y1, step="mid", color='lightsalmon', alpha=0.2, label='hop', zorder=0)
+        ax.fill_between(x, y, y1, step="mid", zorder=0, color=color, alpha=alpha, label=label, **kwargs)
 
     #----------------------------------------------------------------------------------------------
     def exp_rd(self, t, amp, t_0, t_r, t_d):
