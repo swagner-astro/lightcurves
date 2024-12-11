@@ -26,6 +26,11 @@ def load_lc_npy(path):
     pickle_file = open(path, "rb") #open file and read bytes
     return pickle.load(pickle_file)
 
+def load_lc_csv(path):
+    a = np.genfromtxt(path)
+    lc = LightCurve(a[0], a[1], a[2])
+    return lc
+
 def flux_puffer(flux, threshold, threshold_error):
     """
     ATTENTION! This returns artificial flux values! Use cautiously if at all..
@@ -158,6 +163,15 @@ class LightCurve:
         pickle_file = open(path,"wb") #open file and write in bytes
         pickle.dump(self, pickle_file)
         pickle_file.close()
+
+    def save_csv(self, path, bblocks=False):
+        #to open this see load_lc_csv() at top 
+        if bblocks is True:
+            data = np.array([self.time, self.flux, self.flux_error, self.block_pbin])
+            np.savetxt(path, data, comments='#time, flux, flux_error, block_pbin')
+        else:
+            data = np.array([self.time, self.flux, self.flux_error])
+            np.savetxt(path, data, comments='#time, flux, flux_error')
 
     def plot_lc(self, data_color='k', ax=None, new_time_format=None, size=1, **kwargs):
         if ax is None:
