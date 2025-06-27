@@ -39,6 +39,10 @@ dependencies = [
   "lmfit"
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest"]
+
 [tool.hatch.version]
 source = "vcs"
 
