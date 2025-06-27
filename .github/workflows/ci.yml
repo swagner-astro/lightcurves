@@ -34,7 +34,7 @@ jobs:
 
       - name: Download uv
         uses: astral-sh/setup-uv@v6
-	
+
       - name: install dependenies
         run:  uv pip install --system .[test]
 
