@@ -36,7 +36,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 	
       - name: install dependenies
-	run:  uv pip install --system .[test]
+        run:  uv pip install --system .[test]
 
       - name: Test package
         run:  pytest
