@@ -1,0 +1,10 @@
+name: lcs_dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - astropy
+  - matplotlib
+  - numpy
+  - tqdm
+  - scipy
