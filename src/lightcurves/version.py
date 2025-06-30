@@ -1,5 +1,7 @@
 # this is adapted from https://github.com/astropy/astropy/blob/master/astropy/version.py
 # see https://github.com/astropy/astropy/pull/10774 for a discussion on why this needed.
+from __future__ import annotations
+
 try:
     try:
         from ._dev_version import version

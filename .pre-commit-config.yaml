@@ -22,4 +22,3 @@ repos:
       - id: ruff-format
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
-

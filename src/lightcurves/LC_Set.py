@@ -1,15 +1,18 @@
+from __future__ import annotations
+
+import logging
+
+import astropy.visualization.hist as fancy_hist
 import numpy as np
 from matplotlib import pyplot as plt
-import astropy.visualization.hist as fancy_hist
-#https://docs.astropy.org/en/stable/api/astropy.visualization.hist.html
-from lightcurves.LC import LightCurve
-from lightcurves.HOP import Hopject
-import logging
-logging.basicConfig(level=logging.ERROR) #see LC.py
+
+# https://docs.astropy.org/en/stable/api/astropy.visualization.hist.html
+
+logging.basicConfig(level=logging.ERROR)  # see LC.py
 
 
 class LC_Set:
-    '''
+    """
     Light Curve Set
     ===============
     Process and analyze all Hopjects (see HOP.py) in a set of Light Curves (see LC_new.py)
@@ -18,7 +21,7 @@ class LC_Set:
 
     lcs:
         list or np.array of Light Curve Objects
-        Note: get_bblocks() needs to be applied to all lcs first! 
+        Note: get_bblocks() needs to be applied to all lcs first!
         For example:
             lcs = np.zeros(len(files), dtype = object)
             for i in files:
@@ -28,7 +31,7 @@ class LC_Set:
 
     hop_method:
         a) 'baseline'
-            Determine start_time/end_time to be where flux exceeds/goes under baseline 
+            Determine start_time/end_time to be where flux exceeds/goes under baseline
         b) 'half'
             Determine start/end of flare to be at center of valley block
         c) 'flip'
@@ -48,38 +51,41 @@ class LC_Set:
     baseline:
         e.g. mean of flux (default), median of flux, quiescent background ...
 
-    block_min: 
+    block_min:
         Minimal number of blocks to be a flare, e.g. block_min = 2 -> no single-block flares
-    '''
-    def __init__(self, lcs, hop_method='flip', lc_edges='neglect', baseline='mean', block_min=1):
+    """
+
+    def __init__(
+        self, lcs, hop_method="flip", lc_edges="neglect", baseline="mean", block_min=1
+    ):
         # lc.get_bblock needs to be run already for each lc (do that in initialization)!!
         # check weather get_bblockswas run for lc in lcs; return error if not
         self.lcs = lcs
         mom_lc = []
         hopjects = []
 
-        #make sure Bayesian blocks have been initialized before
-        for i,lc in enumerate(lcs):
-            try: 
+        # make sure Bayesian blocks have been initialized before
+        for i, lc in enumerate(lcs):
+            try:
                 lc.block_pbin
             except AttributeError:
-                raise AttributeError('Initialize Bayesian blocks for all LCs first!')
+                raise AttributeError("Initialize Bayesian blocks for all LCs first!")
 
             logging.debug(str(i))
-            #optional: multiprocessing for hoparound of each lc here
-            if hop_method == 'baseline' and baseline == 'mean':
-                hops = lc.find_hop('baseline', np.mean(lc.flux), lc_edges)
-            elif hop_method == 'baseline':
-                hops = lc.find_hop('baseline', lc_edges)
-            elif hop_method == 'half':
-                hops = lc.find_hop('half', lc_edges)
-            elif hop_method == 'flip':
-                hops = lc.find_hop('flip', lc_edges)
-            elif hop_method == 'sharp':
-                hops = lc.find_hop('sharp', lc_edges)
+            # optional: multiprocessing for hoparound of each lc here
+            if hop_method == "baseline" and baseline == "mean":
+                hops = lc.find_hop("baseline", np.mean(lc.flux), lc_edges)
+            elif hop_method == "baseline":
+                hops = lc.find_hop("baseline", lc_edges)
+            elif hop_method == "half":
+                hops = lc.find_hop("half", lc_edges)
+            elif hop_method == "flip":
+                hops = lc.find_hop("flip", lc_edges)
+            elif hop_method == "sharp":
+                hops = lc.find_hop("sharp", lc_edges)
             if hops is None:
-                logging.info(str(i)+ ' no hop found; not variable enough')
-                continue #skip this lc
+                logging.info(str(i) + " no hop found; not variable enough")
+                continue  # skip this lc
             for hop in hops:
                 if len(hop.flux) > 3:
                     hop.get_exp_fit()
@@ -87,12 +93,12 @@ class LC_Set:
                 mom_lc.append(i)
         self.n_blocks = np.array([h.n_blocks for h in hopjects])
         mask = np.where(self.n_blocks > block_min)
-        # eg one-block hop: n_blocks = end_block - start_block 
+        # eg one-block hop: n_blocks = end_block - start_block
         #                            = 5 - 3 = 2 !> 2 (minimum blocks of hop)
 
         # Patrick: lieber erst implementieren, wenns gebraucht wird bzw mit property decorator siehe unten
         self.mom_lc = np.array(mom_lc)[mask]
-        self.hopjects = np.array(hopjects, dtype = object)[mask]
+        self.hopjects = np.array(hopjects, dtype=object)[mask]
         self.dur = np.array([h.dur for h in hopjects])[mask]
         self.rise_time = np.array([h.rise_time for h in hopjects])[mask]
         self.decay_time = np.array([h.decay_time for h in hopjects])[mask]
@@ -105,40 +111,53 @@ class LC_Set:
         self.z = np.array([h.z for h in hopjects])[mask]
 
         ## these attributes only exist if HOP.get_exp_flare was run before
-        #self.exp_tr = np.array([h.exp_tr for h in hopjects if not h.exp_tr is None])[mask]
-        #self.exp_td = np.array([h.exp_td for h in hopjects])[mask]
-        #self.exp_amp = np.array([h.exp_amp for h in hopjects])[mask]
-        #self.exp_t0 = np.array([h.exp_t0 for h in hopjects])[mask]
-        #self.exp_chisqr = np.array([h.exp_chisqr for h in hopjects])[mask]
-        #self.exp_redchi = np.array([h.exp_redchi for h in hopjects])[mask]
+        # self.exp_tr = np.array([h.exp_tr for h in hopjects if not h.exp_tr is None])[mask]
+        # self.exp_td = np.array([h.exp_td for h in hopjects])[mask]
+        # self.exp_amp = np.array([h.exp_amp for h in hopjects])[mask]
+        # self.exp_t0 = np.array([h.exp_t0 for h in hopjects])[mask]
+        # self.exp_chisqr = np.array([h.exp_chisqr for h in hopjects])[mask]
+        # self.exp_redchi = np.array([h.exp_redchi for h in hopjects])[mask]
 
     @property
     def exp_tr(self):
         return np.array([h.exp_tr for h in hopjects])[mask]
-    
-    #----------------------------------------------------------------------------------------------
-    def zcor(self, times): #times = e.g. LC_Set.dur
+
+    # ----------------------------------------------------------------------------------------------
+    def zcor(self, times):  # times = e.g. LC_Set.dur
         if len(np.where(np.isnan(self.z) == True)[0]) > 0:
-            print('Error: not all LCs have a redshift')
+            print("Error: not all LCs have a redshift")
         else:
             times_intr = times / (1 + self.z)
-            return(times_intr)
+            return times_intr
 
-    #----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
     def plot_asym(self, N_bins=None, dens=True):
-        histo, fancy_bins, p = fancy_hist(self.asym, bins='blocks', density=dens, histtype='step',
-                                          label='Bayesian binning')
+        histo, fancy_bins, p = fancy_hist(
+            self.asym,
+            bins="blocks",
+            density=dens,
+            histtype="step",
+            label="Bayesian binning",
+        )
         if N_bins:
             plt.hist(self.asym, N_bins)
         else:
-            histo, fancy_bins, p = fancy_hist(self.asym, bins='knuth', density=dens, edgecolor='k',
-                                              color='hotpink', label='Knuth bins')
+            histo, fancy_bins, p = fancy_hist(
+                self.asym,
+                bins="knuth",
+                density=dens,
+                edgecolor="k",
+                color="hotpink",
+                label="Knuth bins",
+            )
 
     def plot_dur(self, N_bins=None, dens=True):
-        histo, fancy_bins, p = fancy_hist(self.dur, bins='blocks', density=dens, histtype='step')
+        histo, fancy_bins, p = fancy_hist(
+            self.dur, bins="blocks", density=dens, histtype="step"
+        )
         if N_bins:
             plt.hist(self.asym, N_bins)
         else:
-            histo, fancy_bins, p = fancy_hist(self.dur, bins='knuth', density=dens, edgecolor='k',
-                                              color='limegreen')
-
+            histo, fancy_bins, p = fancy_hist(
+                self.dur, bins="knuth", density=dens, edgecolor="k", color="limegreen"
+            )
