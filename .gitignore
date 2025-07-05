@@ -3,3 +3,5 @@ __pycache__/*
 pypi/*
 pypi_test/*
 .ipynb_checkpoints/*
+src/lightcurves/__pycache__/*
+src/lightcurves/_version.py
