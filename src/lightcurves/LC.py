@@ -79,7 +79,9 @@ def get_gti_iis(time, n_gaps, n_pick):
     GTI_end_ii = np.append(GTI_end_ii, len(time) - 1)
     if n_pick:
         # only consider the n_pick longest gtis
-        gap_len = np.array([t - s for s, t in zip(GTI_start_ii, GTI_end_ii, strict=False)])
+        gap_len = np.array(
+            [t - s for s, t in zip(GTI_start_ii, GTI_end_ii, strict=False)]
+        )
         gap_len1 = np.sort(gap_len)
         ii = [
             x for x in range(len(gap_len)) if gap_len[x] in gap_len1[-n_pick:]
