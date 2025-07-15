@@ -432,7 +432,7 @@ class LightCurve:
         This does not update `LC.py`, it saves current object state.
         """
         with open(path, "wb") as pickle_file:
-        pickle.dump(self, pickle_file)
+            pickle.dump(self, pickle_file)
 
     def save_csv(self, path: str, bblocks: bool = False) -> None:
         """
