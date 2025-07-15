@@ -25,7 +25,7 @@ ERROR:      sth didn't work, abort mission
 def load_lc(path: str) -> "LightCurve":
     """
     Load a pickled LightCurve instance from a file created with `save_lc()`.
-    
+
     WARNING
     -------
     Uses pickle. Loaded instance reflects the class at save-time.
@@ -36,7 +36,7 @@ def load_lc(path: str) -> "LightCurve":
 def load_lc_npy(path: str) -> "LightCurve":
     """
     Load pickled LightCurve instance from numpy array created with `save_lc()`.
-    
+
     WARNING
     -------
     Uses pickle. Loaded instance reflects the class at save-time.
@@ -52,9 +52,9 @@ def load_lc_csv(path: str) -> "LightCurve":
     return LightCurve(a[0], a[1], a[2])
 
 def flux_puffer(
-    flux: np.ndarray, 
-    flux_error: np.ndarray, 
-    threshold: float, 
+    flux: np.ndarray,
+    flux_error: np.ndarray,
+    threshold: float,
     threshold_error: float
     ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -62,7 +62,7 @@ def flux_puffer(
 
     Use Case
     --------
-    Apply Bayesian blocks to puffered LC to detect significant variations 
+    Apply Bayesian blocks to puffered LC to detect significant variations
     relative to threshold (e.g. flares).
 
     WARNING
@@ -83,7 +83,7 @@ def flux_puffer(
     Returns
     -------
     flux_new : array_like
-        Modified flux array with threshold applied. 
+        Modified flux array with threshold applied.
     flux_error_new : array like
         Associated uncertainties, modified analogously.
     """
@@ -92,9 +92,9 @@ def flux_puffer(
     return(flux_new, flux_error_new)
 
 def clean_data(
-    time: np.ndarray, 
-    flux: np.ndarray, 
-    flux_error: np.ndarray, 
+    time: np.ndarray,
+    flux: np.ndarray,
+    flux_error: np.ndarray,
     ts: Optional[np.ndarray] = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """
@@ -128,7 +128,7 @@ def clean_data(
 
     TBD
     ---
-    this could be a LC method and return a new LC or alter the instance? 
+    this could be a LC method and return a new LC or alter the instance?
     """
     # Mask NaN values of flux and flux_error
     nan_mask = ~np.isnan(flux) & ~np.isnan(flux_error)
@@ -152,7 +152,7 @@ def clean_data(
 
 def get_gti_iis(
         time: np.ndarray,
-        n_gaps: int, 
+        n_gaps: int,
         n_pick: Optional[int]
         ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -177,18 +177,18 @@ def get_gti_iis(
     """
     diff = np.diff(time)
     diff1 = np.sort(diff)
-    ii = [x for x in range(len(diff)) if diff[x] in diff1[-n_gaps:]] 
+    ii = [x for x in range(len(diff)) if diff[x] in diff1[-n_gaps:]]
     #index of the 10 longest gaps... risky business due to precision issues
     GTI_start_ii = np.array(ii)+1
     GTI_start_ii = np.insert(GTI_start_ii,0,0)
     GTI_end_ii = np.array(ii)
     GTI_end_ii = np.append(GTI_end_ii, len(time)-1)
     if n_pick:
-        # only consider the n_pick longest GTIs 
+        # only consider the n_pick longest GTIs
         # TBD: double check, might compute index differences, not time gaps..
         gap_len = np.array([t - s for s,t in zip(GTI_start_ii, GTI_end_ii)])
         gap_len1 = np.sort(gap_len)
-        ii = [x for x in range(len(gap_len)) if gap_len[x] in gap_len1[-n_pick:]] 
+        ii = [x for x in range(len(gap_len)) if gap_len[x] in gap_len1[-n_pick:]]
         # n_gaps = considered gaps (longest not gaps)
         GTI_start_ii_ = GTI_start_ii[ii]
         GTI_end_ii_ = GTI_end_ii[ii]
@@ -198,13 +198,13 @@ def get_gti_iis(
 
 
 def make_gti_lcs(
-    lc: "LightCurve", 
-    n_gaps: int, 
+    lc: "LightCurve",
+    n_gaps: int,
     n_pick: int = None
     ) -> np.ndarray:
     """
     Divide LC into several LCs (Good Time Intervals = GTIs) based on largest
-    time gaps. Optionally only pick largest GTIs. 
+    time gaps. Optionally only pick largest GTIs.
 
     Parameters
     ----------
@@ -222,12 +222,12 @@ def make_gti_lcs(
     """
     gti_starts, gti_ends = get_gti_iis(lc.time, n_gaps, n_pick)
     if n_pick is None:
-        n_pick = n_gaps + 1 #select all 
+        n_pick = n_gaps + 1 #select all
     chunks = []
     for g in range(n_pick):
         gti_lc = LightCurve(
-            lc.time[gti_starts[g]:gti_ends[g]+1], 
-            lc.flux[gti_starts[g]:gti_ends[g]+1], 
+            lc.time[gti_starts[g]:gti_ends[g]+1],
+            lc.flux[gti_starts[g]:gti_ends[g]+1],
             lc.flux_error[gti_starts[g]:gti_ends[g]+1],
             name=lc.name,
             z=lc.z)
@@ -313,7 +313,7 @@ class LightCurve:
         if len(time) != len(flux) or len(time) != len(flux_error):
             raise ValueError("Input arrays do not have same length")
         if (
-            len(flux[np.isnan(flux)]) > 0 
+            len(flux[np.isnan(flux)]) > 0
             or len(flux_error[np.isnan(flux_error)]) > 0
             ):
             raise TypeError("flux or flux_error contain np.nan values")
@@ -331,7 +331,7 @@ class LightCurve:
         return (
             f"LightCurve (bins = {len(self.flux)}, "
             f"name = {self.name}, "
-            f"cadende = {self.cadence}, " 
+            f"cadende = {self.cadence}, "
             f"telescope = {self.telescope}, "
             f"z = {self.z})"
         )
@@ -340,12 +340,12 @@ class LightCurve:
         return len(self.time)
 
     def __getitem__(
-        self, 
+        self,
         inbr: Union[int, slice, List[int]]
         ) -> Union[np.ndarray, "LightCurve"]:
         """
         Access elements or subsets of the LightCurve using indexing or slicing.
-    
+
         Supports:
         - Integer index: returns one bin (time, flux, flux_error), eg `lc[i]`
         - Slice: returns a new LightCurve, eg `lc[i:j]`
@@ -372,8 +372,8 @@ class LightCurve:
         """
         if isinstance(inbr, int):
             return np.array([
-                self.time[inbr], 
-                self.flux[inbr], 
+                self.time[inbr],
+                self.flux[inbr],
                 self.flux_error[inbr]
                 ])
         if isinstance(inbr, slice):
@@ -390,15 +390,15 @@ class LightCurve:
         if isinstance(inbr, list):
             # can't be implemented with 'int or list' -> confusion with slice
             return np.array([
-                self.time[inbr], 
-                self.flux[inbr], 
+                self.time[inbr],
+                self.flux[inbr],
                 self.flux_error[inbr]
                 ])
         else:
             raise TypeError("Index must be int, slice, or list of ints.")
 
     def select_by_time(self, t_min: float, t_max: float) -> "LightCurve":
-        """ 
+        """
         Select a portion of the light curve between two time bounds.
 
         Parameters
@@ -420,12 +420,12 @@ class LightCurve:
     def save_npy(self,path: str) -> None:
         """
         Save light curve object as .npy file using pickle.
-        
+
         Parameters
         ----------
         path : str
             Destination file path.
-        
+
         Notes
         -----
         Use `load_lc_npy()` to read this file.
@@ -454,8 +454,8 @@ class LightCurve:
                 self.time, self.flux, self.flux_error, self.block_pbin
                 ])
             np.savetxt(
-                path, 
-                data, 
+                path,
+                data,
                 comments="#time, flux, flux_error, block_pbin"
                 )
         else:
@@ -463,17 +463,17 @@ class LightCurve:
                 self.time, self.flux, self.flux_error
                 ])
             np.savetxt(
-                path, 
-                data, 
+                path,
+                data,
                 comments="#time, flux, flux_error"
                 )
 
     def plot_lc(
-        self, 
-        data_color: str = "k", 
-        ax: Optional[Axes] = None, 
-        new_time_format: Optional[str] = None, 
-        size: float = 1, 
+        self,
+        data_color: str = "k",
+        ax: Optional[Axes] = None,
+        new_time_format: Optional[str] = None,
+        size: float = 1,
         **kwargs
         ) -> None:
         """
@@ -543,9 +543,9 @@ class LightCurve:
             plt.sca(ax)  # go back to initial bottom axis
 
     def plot_hline(
-        self, 
-        value: float, 
-        ax: Optional[Axes] = None, 
+        self,
+        value: float,
+        ax: Optional[Axes] = None,
         **kwargs
         ) -> None:
         """
@@ -569,9 +569,9 @@ class LightCurve:
         ax.hlines(value, xmin=min(self.time), xmax=max(self.time), **kwargs)
 
     def plot_vline(
-        self, 
-        value: float, 
-        ax: Optional[Axes] = None, 
+        self,
+        value: float,
+        ax: Optional[Axes] = None,
         **kwargs
         ) -> None:
         """
@@ -595,10 +595,10 @@ class LightCurve:
         ax.vlines(value, ymin=min(self.flux), ymax=max(self.flux), **kwargs)
 
     def plot_shade(
-        self, 
-        start_time: float, 
-        end_time: float, 
-        ax: Optional[Axes] = None, 
+        self,
+        start_time: float,
+        end_time: float,
+        ax: Optional[Axes] = None,
         **kwargs
         ) -> None:
         """
@@ -628,8 +628,8 @@ class LightCurve:
 
     def plot_grid(
         self,
-        spacing: float = 10, 
-        ax: Optional[Axes] = None, 
+        spacing: float = 10,
+        ax: Optional[Axes] = None,
         **kwargs
         ) -> None:
         """
@@ -659,8 +659,8 @@ class LightCurve:
 
     # -------------------------------------------------------------------------
     def get_bblocks(
-        self, 
-        gamma_value: Optional[float] = None, 
+        self,
+        gamma_value: Optional[float] = None,
         p0_value: Optional[float] = 0.05
         ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -675,13 +675,13 @@ class LightCurve:
         Parameters
         ----------
         gamma_value : float, optional
-            Regularization parameter controlling the number of blocks. 
+            Regularization parameter controlling the number of blocks.
             Higher values yield fewer blocks.
             `gamma_value` overwrites `p0_value`.
         p0_value : float, optional
-            False alarm probability, used to control the sensitivity of change 
-            point detection. Default is 0.05. Calibrated with white noise. 
-    
+            False alarm probability, used to control the sensitivity of change
+            point detection. Default is 0.05. Calibrated with white noise.
+
         Returns
         -------
         block_pbin : np.ndarray
@@ -698,7 +698,7 @@ class LightCurve:
             #     This is relevant for computing bb_i and making Hopjects.
 
         Notes
-        -----   
+        -----
         - See: Scargle et al. 2013, arXiv:1304.2818
         - See: Jupyter Notebook on GitHub for illustration.
         - For constant light curves, a single block is returned.
@@ -770,7 +770,7 @@ class LightCurve:
 
     # -------------------------------------------------------------------------
     def get_bblocks_above(
-        self, 
+        self,
         threshold: float
         ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -817,7 +817,7 @@ class LightCurve:
         -----
         - `lc.get_bblocks()` must be run before calling this function.
         - Errors are not recomputed after thresholding. TBD: thresholderror.
-    
+
         """
         # Replace all values below threshold
         try:
@@ -836,13 +836,13 @@ class LightCurve:
         block_mask = np.ones(len(self.block_val), dtype=bool)
         edge_mask = np.ones(len(self.edges), dtype=bool)
         for i in range(len(self.block_val) - 1):
-            if self.block_val[i] == threshold 
+            if self.block_val[i] == threshold
                 and self.block_val[i + 1] == threshold:
                 block_mask[i + 1] = False
                 edge_mask[i + 1] = False
 
         self.block_val = self.block_val[block_mask]
-        self.block_val_error = self.block_val_error[block_mask] 
+        self.block_val_error = self.block_val_error[block_mask]
             #TBD -> thresholderror
         self.edge_index = self.edge_index[edge_mask]
         self.edges = self.edges[edge_mask]
@@ -910,13 +910,13 @@ class LightCurve:
     def bb_i(self, t: float):
         """
         Get the index of the Bayesian block (in `block_val`) that contains the
-        given time. 
+        given time.
 
         If `t == edge`, return the block *left* of the edge (t = end of block).
 
         This correctly identifies times from HOP 'baseline'.
         Identify times from other HOP methods with `bb_i_start` and `bb_i_end`!
-        
+
         Parameters
         ----------
         t : float
@@ -964,7 +964,7 @@ class LightCurve:
         -------
         int
             Index of `lc.block_val` starting with `t`.
-        
+
         Notes
         -----
         - Works fine with HOP 'flip', 'halfclap', and 'sharp'
@@ -996,7 +996,7 @@ class LightCurve:
         -------
         int
             Index of `lc.block_val` starting with `t`.
-        
+
         Notes
         -----
         - Works fine with HOP 'flip', 'halfclap', and 'sharp'
@@ -1017,15 +1017,15 @@ class LightCurve:
         baseline: Optional[float] = None
         ) -> List[Hopject]: #this type is not known in LC.py yet
         """
-        TBD 
+        TBD
         currently this is kind of an implicit circular renference:
-            * LC has List of HOPS 
+            * LC has List of HOPS
             * and HOP as LC as attribute
-        fix such that: 
+        fix such that:
             * LC imports Hopjects
             * find_hop determines HOP parameters and is called by..
             * dedicated get_hop function (here) which returns Hopjects with
-                * time, flux, flux_error, iis, bblock things 
+                * time, flux, flux_error, iis, bblock things
                 * and iis & bblock things are optional in creating a Hopject
         so spirit will be that HOP is not so standalone, just add-on to LC
         TBD
@@ -1058,8 +1058,8 @@ class LightCurve:
         """
         Plot shaded rectangular area for each HOP group in the light curve.
 
-        To visualize HOP segments (e.g. flares) by highlighting them as 
-        rectangular area in the light curve. Multiple colors can be used to 
+        To visualize HOP segments (e.g. flares) by highlighting them as
+        rectangular area in the light curve. Multiple colors can be used to
         alternate between consecutive segments for clarity.
 
         Parameters
@@ -1073,7 +1073,7 @@ class LightCurve:
         alpha : float, optional
             Transparency level (0-1) for the shaded area. Default is 0.2.
         label : str, optional
-            Label for the first HOP area, used in the plot legend. If None, 
+            Label for the first HOP area, used in the plot legend. If None,
             defaults to `"hop <method>"`.
         zorder : float, optional
             Z-order for the plot layer. Default is 0 (in the background).
@@ -1142,10 +1142,10 @@ class LightCurve:
                 )
             elif i != 0:
                 ax.fill_between(
-                    x, y, y1, step="mid", color="lightsalmon", alpha=0.2, 
+                    x, y, y1, step="mid", color="lightsalmon", alpha=0.2,
                     zorder=0
                 )
-            """ 
+            """
 
     # -------------------------------------------------------------------------
     def plot_all_hop(self) -> None:
@@ -1184,10 +1184,3 @@ class LightCurve:
         self.plot_hop()
         plt.ylabel("sharp")
         fig.subplots_adjust(hspace=0)
-
-
-
-
-
-
-
