@@ -432,7 +432,7 @@ class LightCurve:
         This does not update `LC.py`, it saves current object state.
         """
         with open(path, "wb") as pickle_file:
-        pickle.dump(self, pickle_file)
+            pickle.dump(self, pickle_file)
 
     def save_csv(self, path: str, bblocks: bool = False) -> None:
         """
@@ -836,8 +836,10 @@ class LightCurve:
         block_mask = np.ones(len(self.block_val), dtype=bool)
         edge_mask = np.ones(len(self.edges), dtype=bool)
         for i in range(len(self.block_val) - 1):
-            if self.block_val[i] == threshold
-                and self.block_val[i + 1] == threshold:
+            if (
+                self.block_val[i] == threshold
+                and self.block_val[i + 1] == threshold
+                ):
                 block_mask[i + 1] = False
                 edge_mask[i + 1] = False
 
