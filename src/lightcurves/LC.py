@@ -186,7 +186,9 @@ def get_gti_iis(
     if n_pick:
         # only consider the n_pick longest GTIs
         # TBD: double check, might compute index differences, not time gaps..
-        gap_len = np.array([t - s for s, t in zip(GTI_start_ii, GTI_end_ii, strict=False)])
+        gap_len = np.array(
+            [t - s for s, t in zip(GTI_start_ii, GTI_end_ii, strict=False)]
+        )
         gap_len1 = np.sort(gap_len)
         ii = [x for x in range(len(gap_len)) if gap_len[x] in gap_len1[-n_pick:]]
         # n_gaps = considered gaps (longest not gaps)
@@ -332,9 +334,7 @@ class LightCurve:
     def __len__(self):
         return len(self.time)
 
-    def __getitem__(
-        self, inbr: int | slice | list[int]
-    ) -> np.ndarray | LightCurve:
+    def __getitem__(self, inbr: int | slice | list[int]) -> np.ndarray | LightCurve:
         """
         Access elements or subsets of the LightCurve using indexing or slicing.
 
@@ -583,9 +583,7 @@ class LightCurve:
         y1 = np.ones(len(x)) * np.min(self.flux)
         ax.fill_between(x, y, y1, step="mid", alpha=0.2, zorder=0, **kwargs)
 
-    def plot_grid(
-        self, spacing: float = 10, ax: Axes | None = None, **kwargs
-    ) -> None:
+    def plot_grid(self, spacing: float = 10, ax: Axes | None = None, **kwargs) -> None:
         """
         Add a minor grid to the time axis at specified spacing.
 
