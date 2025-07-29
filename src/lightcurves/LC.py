@@ -1033,7 +1033,7 @@ class LightCurve:
         if ax is None:
             ax = plt.gca()
         if label is None:
-            label = "hop " + str(hop.method)
+            label = str(self.hops[0].method)
 
         # Make color iterable
         if isinstance(color, str):
