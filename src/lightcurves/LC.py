@@ -142,20 +142,19 @@ def clean_data(
     flux_ = flux[nan_mask]
     flux_error_ = flux_error[nan_mask]
     time_ = time[nan_mask]
-    logging.info(f"Deleted {len(flux) - len(flux_)} NaN entries.")
+    logging.info("Deleted %s NaN entries.", len(flux) - len(flux_))
 
     # Remove duplicate times (keep first occurrence)
     time_unique, time_unique_id = np.unique(time_, return_index=True)
     flux_clean = flux_[time_unique_id]
     flux_error_clean = flux_error_[time_unique_id]
-    logging.info(f"Deleted {len(time_) - len(time_unique)} time duplicates")
+    logging.info("Deleted %s time duplicates", {len(time_) - len(time_unique)})
     if ts is not None:
         ts_ = ts[nan_mask]
         ts_clean = ts_[time_unique_id]
         return (time_unique, flux_clean, flux_error_clean, ts_clean)
-    if ts is None:
+    else:
         return (time_unique, flux_clean, flux_error_clean, None)
-
 
 def get_gti_iis(
     time: np.ndarray, n_gaps: int, n_pick: int | None
@@ -203,7 +202,7 @@ def get_gti_iis(
     return GTI_start_ii, GTI_end_ii
 
 
-def make_gti_lcs(lc: LightCurve, n_gaps: int, n_pick: int = None) -> np.ndarray:
+def make_gti_lcs(lc: LightCurve, n_gaps: int, n_pick: int | None = None) -> np.ndarray:
     """
     Divide LC into several LCs (Good Time Intervals = GTIs) based on largest
     time gaps. Optionally only pick largest GTIs.
@@ -314,11 +313,14 @@ class LightCurve:
         self.telescope = telescope
         self.cadence = cadence
         if len(time) != len(flux) or len(time) != len(flux_error):
-            raise ValueError("Input arrays do not have same length")
+            friendly_error = "Input arrays do not have same length"
+            raise ValueError(friendly_error)
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
-            raise TypeError("flux or flux_error contain np.nan values")
+            friendly_error = "flux or flux_error contain np.nan values" 
+            raise TypeError(friendly_error)
         if len(time) != len(np.unique(time)):
-            raise ValueError("time contains duplicate values")
+            friendly_error = "time contains duplicate values"
+            raise ValueError(friendly_error)
         if time_format:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
@@ -383,7 +385,8 @@ class LightCurve:
         if isinstance(inbr, list):
             # can't be implemented with 'int or list' -> confusion with slice
             return np.array([self.time[inbr], self.flux[inbr], self.flux_error[inbr]])
-        raise TypeError("Index must be int, slice, or list of ints.")
+        friendly_error = "Index must be int, slice, or list of ints."
+        raise TypeError(friendly_error)
 
     def select_by_time(self, t_min: float, t_max: float) -> LightCurve:
         """
@@ -407,7 +410,7 @@ class LightCurve:
 
     def save_npy(self, path: str) -> None:
         """
-        Save light curve object as .npy file using pickle.
+        Save light curve object using pickle.
 
         Parameters
         ----------
@@ -418,8 +421,11 @@ class LightCurve:
         -----
         Use `load_lc_npy()` to read this file.
         This does not update `LC.py`, it saves current object state.
+        TBD: actaully since this is an object it just saves a pickle that could be called .npy
+             the save npy business needs to be revisited I think it might be nonesense 
         """
-        with open(path, "wb") as pickle_file:
+        path = Path(path)
+        with path.open("wb") as pickle_file:
             pickle.dump(self, pickle_file)
 
     def save_csv(self, path: str, bblocks: bool = False) -> None:
@@ -502,7 +508,7 @@ class LightCurve:
             axtop.set_xbound(ax.get_xbound())
             axtop.set_xlim(ax.get_xlim())
             format_labels = astropy.time.Time(
-                [t for t in ax.get_xticks()], format=self.time_format
+                list(t for t in ax.get_xticks()), format=self.time_format
             )
             if new_time_format == "isot":
                 new_labels = [

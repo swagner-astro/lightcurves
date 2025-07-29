@@ -176,7 +176,7 @@ class HopFinder:
                         >= lc.block_val[lc.bb_i(peaks[x + 1])]
                     ):
                         peaks = np.delete(peaks, x + 1)
-                    logging.info(f"neglected double peak in HOP {x}")
+                    logging.info("neglected double peak in HOP %s", x)
                     break
         return peaks, starts, ends
 
