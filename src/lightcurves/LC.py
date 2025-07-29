@@ -1057,40 +1057,6 @@ class LightCurve:
                 **kwargs,
             )
 
-            """ OLD:
-            if i == 0:
-                ax.fill_between(
-                    x,
-                    y,
-                    y1,
-                    step="mid",
-                    color="lightsalmon",
-                    alpha=0.2,
-                    label="hop",
-                    zorder=0,
-                )
-            if i == 1:
-                ax.fill_between(
-                    x,
-                    y,
-                    y1,
-                    step="mid",
-                    color="orchid",
-                    alpha=0.2,
-                    label="hop",
-                    zorder=0,
-                )
-            elif i % 2:
-                ax.fill_between(
-                    x, y, y1, step="mid", color="orchid", alpha=0.2, zorder=0
-                )
-            elif i != 0:
-                ax.fill_between(
-                    x, y, y1, step="mid", color="lightsalmon", alpha=0.2,
-                    zorder=0
-                )
-            """
-
     # -------------------------------------------------------------------------
     def plot_all_hop(self) -> None:
         """
@@ -1107,24 +1073,28 @@ class LightCurve:
         ax0 = fig.add_subplot(511)
         self.find_hop("baseline")
         self.plot_bblocks()
+        self.plot_lc()
         self.plot_hop()
         plt.ylabel("baseline")
 
         ax1 = fig.add_subplot(512)
         self.find_hop("half")
         self.plot_bblocks()
+        self.plot_lc()
         self.plot_hop()
         plt.ylabel("half")
 
         ax2 = fig.add_subplot(513)
         self.find_hop("flip")
         self.plot_bblocks()
+        self.plot_lc()
         self.plot_hop()
         plt.ylabel("flip")
 
         ax3 = fig.add_subplot(514)
         self.find_hop("sharp")
         self.plot_bblocks()
+        self.plot_lc()
         self.plot_hop()
         plt.ylabel("sharp")
         fig.subplots_adjust(hspace=0)
