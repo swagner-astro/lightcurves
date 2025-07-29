@@ -8,9 +8,11 @@ import astropy.stats.bayesian_blocks as bblocks
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes  # for type hints only
+from pathlib import Path
+
 
 # https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
-from lightcurves.HopFinder import *
+import lightcurves.HopFinder as hf
 
 logging.basicConfig(level=logging.ERROR)
 """
@@ -23,7 +25,7 @@ ERROR:      sth didn't work, abort mission
 """
 
 
-def load_lc(path: str) -> LightCurve:
+def load_lc(path: str | Path) -> LightCurve:
     """
     Load a pickled LightCurve instance from a file created with `save_lc()`.
 
@@ -31,11 +33,13 @@ def load_lc(path: str) -> LightCurve:
     -------
     Uses pickle. Loaded instance reflects the class at save-time.
     """
-    with open(path, "rb") as f:
+    path = Path(path)
+    with path.open("rb") as f:
         return pickle.load(f)
 
-
-def load_lc_npy(path: str) -> LightCurve:
+''' 
+this following is exactly like the previous one.. might not be necessary
+def load_lc_npy(path: str | Path) -> LightCurve:
     """
     Load pickled LightCurve instance from numpy array created with `save_lc()`.
 
@@ -43,9 +47,10 @@ def load_lc_npy(path: str) -> LightCurve:
     -------
     Uses pickle. Loaded instance reflects the class at save-time.
     """
-    with open(path, "rb") as f:
+    path = Path(path)
+    with path.open("rb") as f:
         return pickle.load(f)
-
+'''
 
 def load_lc_csv(path: str) -> LightCurve:
     """
@@ -89,7 +94,7 @@ def flux_puffer(
         Associated uncertainties, modified analogously.
     """
     flux_new = np.where(flux > threshold, flux, threshold)
-    flux_error_new = np.where(flux > threshold, flux_error, th_error)
+    flux_error_new = np.where(flux > threshold, flux_error, threshold_error)
     return (flux_new, flux_error_new)
 
 
@@ -979,13 +984,13 @@ class LightCurve:
                 self.baseline = np.mean(self.flux)
             else:
                 self.baseline = baseline
-            hopfinder = HopFinderBaseline(lc_edges)
+            hopfinder = hf.HopFinderBaseline(lc_edges)
         if method == "half":
-            hopfinder = HopFinderHalf(lc_edges)
+            hopfinder = hf.HopFinderHalf(lc_edges)
         if method == "sharp":
-            hopfinder = HopFinderSharp(lc_edges)
+            hopfinder = hf.HopFinderSharp(lc_edges)
         if method == "flip":
-            hopfinder = HopFinderFlip(lc_edges)
+            hopfinder = hf.HopFinderFlip(lc_edges)
         self.hops = hopfinder.find(self)
         return self.hops
 

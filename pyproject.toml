@@ -78,6 +78,7 @@ extend-select = [
   "UP",       # pyupgrade
   "YTT",      # flake8-2020
 ]
+extend-ignore = ["T201"]  #make ruff ignore that there are print statements (bc notebooks use them)
 ignore = [
   "PLR09",    # Too many <...>
   "PLR2004",  # Magic value used in comparison

@@ -90,8 +90,7 @@ class HopFinder:
         if len(peaks) < 1:
             logging.info("not variable enough, no peak found")
             return (None, None, None)
-        if self.lc_edges == "neglect":
-            if len(starts) < 1 or len(ends) < 1:
+        if self.lc_edges == "neglect" and (len(starts) < 1 or len(ends) < 1):
                 logging.info("not variable enough, missing start or end")
                 return (None, None, None)
         if self.lc_edges == "add":
@@ -177,7 +176,7 @@ class HopFinder:
                         >= lc.block_val[lc.bb_i(peaks[x + 1])]
                     ):
                         peaks = np.delete(peaks, x + 1)
-                    logging.info("neglected double peak in HOP " + str(x))
+                    logging.info(f"neglected double peak in HOP {x}")
                     break
         return peaks, starts, ends
 
@@ -199,8 +198,7 @@ class HopFinderBaseline(HopFinder):
         peaks = []  # time of all local peaks over baseline (in units of edges = units of time)
         for i in range(1, len(diff)):
             # if previous rising; this falling
-            if diff[i - 1] > 0 and diff[i] < 0:
-                if lc.block_val[i] > lc.baseline:
+            if (diff[i - 1] > 0 and diff[i] < 0) and (lc.block_val[i] > lc.baseline):
                     # peak_time = middle of peak block
                     peaks.append(lc.edges[i] + (lc.edges[i + 1] - lc.edges[i]) / 2)
         return peaks
