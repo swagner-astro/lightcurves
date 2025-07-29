@@ -843,7 +843,7 @@ class LightCurve:
                 self.time,
                 self.block_pbin,
                 where="mid",
-                linewidth=linewdith,
+                linewidth=linewidth,
                 color=color,
                 **kwargs,
             )
