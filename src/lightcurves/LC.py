@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import logging
 import pickle
+from pathlib import Path
 
 import astropy
 import astropy.stats.bayesian_blocks as bblocks
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes  # for type hints only
-from pathlib import Path
-
 
 # https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
 import lightcurves.HopFinder as hf
@@ -37,7 +36,8 @@ def load_lc(path: str | Path) -> LightCurve:
     with path.open("rb") as f:
         return pickle.load(f)
 
-''' 
+
+'''
 this following is exactly like the previous one.. might not be necessary
 def load_lc_npy(path: str | Path) -> LightCurve:
     """
@@ -51,6 +51,7 @@ def load_lc_npy(path: str | Path) -> LightCurve:
     with path.open("rb") as f:
         return pickle.load(f)
 '''
+
 
 def load_lc_csv(path: str) -> LightCurve:
     """
@@ -153,8 +154,8 @@ def clean_data(
         ts_ = ts[nan_mask]
         ts_clean = ts_[time_unique_id]
         return (time_unique, flux_clean, flux_error_clean, ts_clean)
-    else:
-        return (time_unique, flux_clean, flux_error_clean, None)
+    return (time_unique, flux_clean, flux_error_clean, None)
+
 
 def get_gti_iis(
     time: np.ndarray, n_gaps: int, n_pick: int | None
@@ -316,7 +317,7 @@ class LightCurve:
             friendly_error = "Input arrays do not have same length"
             raise ValueError(friendly_error)
         if len(flux[np.isnan(flux)]) > 0 or len(flux_error[np.isnan(flux_error)]) > 0:
-            friendly_error = "flux or flux_error contain np.nan values" 
+            friendly_error = "flux or flux_error contain np.nan values"
             raise TypeError(friendly_error)
         if len(time) != len(np.unique(time)):
             friendly_error = "time contains duplicate values"
@@ -422,7 +423,7 @@ class LightCurve:
         Use `load_lc_npy()` to read this file.
         This does not update `LC.py`, it saves current object state.
         TBD: actaully since this is an object it just saves a pickle that could be called .npy
-             the save npy business needs to be revisited I think it might be nonesense 
+             the save npy business needs to be revisited I think it might be nonesense
         """
         path = Path(path)
         with path.open("wb") as pickle_file:
@@ -785,7 +786,7 @@ class LightCurve:
             )
         except AttributeError:
             msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
-            raise AttributeError(msg) from err 
+            raise AttributeError(msg) from err
 
         # Merge neighbouring threshold blocks and delete edges
         block_mask = np.ones(len(self.block_val), dtype=bool)
