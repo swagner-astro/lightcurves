@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 # from lightcurves.LC import LightCurve
-from lightcurves.HOP import Hopject
+from lightcurves.hop import Hopject
 
 logging.basicConfig(level=logging.ERROR)
 """

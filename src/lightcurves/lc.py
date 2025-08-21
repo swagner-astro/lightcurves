@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes  # for type hints only
 
 # https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
-import lightcurves.HopFinder as hf
+import lightcurves.hop_finder as hf
 
 logging.basicConfig(level=logging.ERROR)
 """
