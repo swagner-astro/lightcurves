@@ -508,7 +508,7 @@ class LightCurve:
             axtop.set_xbound(ax.get_xbound())
             axtop.set_xlim(ax.get_xlim())
             format_labels = astropy.time.Time(
-                list(t for t in ax.get_xticks()), format=self.time_format
+                list(ax.get_xticks()), format=self.time_format
             )
             if new_time_format == "isot":
                 new_labels = [
@@ -784,9 +784,8 @@ class LightCurve:
                 self.block_val > threshold, self.block_val, threshold
             )
         except AttributeError:
-            raise AttributeError(
-                "Initialize Bayesian blocks with lc.get_bblocks() first!"
-            )
+            msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
+            raise AttributeError(msg) from err 
 
         # Merge neighbouring threshold blocks and delete edges
         block_mask = np.ones(len(self.block_val), dtype=bool)
@@ -857,9 +856,8 @@ class LightCurve:
                 **kwargs,
             )
         except AttributeError:
-            raise AttributeError(
-                "Initialize Bayesian blocks with .get_bblocks() first!"
-            )
+            msg = "Initialize Bayesian blocks with .get_bblocks() first!"
+            raise AttributeError(msg) from err
 
     # -------------------------------------------------------------------------
     def bb_i(self, t: float):
