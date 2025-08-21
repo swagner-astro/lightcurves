@@ -786,7 +786,7 @@ class LightCurve:
             )
         except AttributeError:
             msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
-            raise AttributeError(msg) from err 
+            raise AttributeError(msg) from err
 
         # Merge neighbouring threshold blocks and delete edges
         block_mask = np.ones(len(self.block_val), dtype=bool)
