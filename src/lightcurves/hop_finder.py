@@ -91,8 +91,8 @@ class HopFinder:
             logging.info("not variable enough, no peak found")
             return (None, None, None)
         if self.lc_edges == "neglect" and (len(starts) < 1 or len(ends) < 1):
-                logging.info("not variable enough, missing start or end")
-                return (None, None, None)
+            logging.info("not variable enough, missing start or end")
+            return (None, None, None)
         if self.lc_edges == "add":
             if len(starts) < 1:
                 starts = np.insert(starts, 0, lc.edges[0])
@@ -199,8 +199,8 @@ class HopFinderBaseline(HopFinder):
         for i in range(1, len(diff)):
             # if previous rising; this falling
             if (diff[i - 1] > 0 and diff[i] < 0) and (lc.block_val[i] > lc.baseline):
-                    # peak_time = middle of peak block
-                    peaks.append(lc.edges[i] + (lc.edges[i + 1] - lc.edges[i]) / 2)
+                # peak_time = middle of peak block
+                peaks.append(lc.edges[i] + (lc.edges[i + 1] - lc.edges[i]) / 2)
         return peaks
 
     def find_start_end(self, lc):
