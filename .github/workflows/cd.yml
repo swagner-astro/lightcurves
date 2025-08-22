@@ -22,7 +22,7 @@ jobs:
 
   publish:
     needs: [dist]
-    environment: pypi
+    environment: publish
     permissions:
       id-token: write
       attestations: write
