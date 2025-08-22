@@ -66,11 +66,9 @@ class LC_Set:
 
         # make sure Bayesian blocks have been initialized before
         for i, lc in enumerate(lcs):
-            try:
-                lc.block_pbin
-            except AttributeError as err:
-                msg = "Initialize Bayesian blocks for all LCs first!"
-                raise AttributeError(msg) from err
+            if lc.block_pbin is None or lc.block_val is None:
+                msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
+                raise AttributeError(msg)
 
             logging.debug(str(i))
             # optional: multiprocessing for hoparound of each lc here
@@ -128,7 +126,8 @@ class LC_Set:
         """Return times (e.g. LC_Set.dur) corrected by redshift: t_intr = t_obs / (1 + z)."""
         z = np.asarray(self.z, dtype=float)
         if np.isnan(z).any():
-            raise ValueError("Not all LCs have a redshift (NaN in self.z).")
+            msg = "Not all LCs have a redshift (NaN in self.z)."
+            raise ValueError(msg)
         return np.asarray(times, dtype=float) / (1 + z)
 
     # ----------------------------------------------------------------------------------------------

@@ -266,14 +266,14 @@ class LightCurve:
 
     Attributes
     ----------
-    time : np.ndarray
+    time : numpy.ndarray
         Array of time values.
-    flux : np.ndarray
+    flux : numpy.ndarray
         Array of flux values.
-    flux_error : np.ndarray
+    flux_error : numpy.ndarray
         Array of flux uncertainties.
     time_format : str or None
-        Format of `time` corresponding to astropy.time.Time (eg, 'MJD', 'JD').
+        Format of `time` corresponding to astropy.time.Time (e.g., ``'MJD'``, ``'JD'``).
     name : str or None
         Source name or ID.
     z : float or None
@@ -282,6 +282,22 @@ class LightCurve:
         Telescope or instrument name.
     cadence : float or None
         Observational cadence.
+    astropy_time : astropy.time.Time or None
+        Astropy time object built from `time` when `time_format` is provided.
+
+    **Bayesian-block results (see ``get_bblocks``, all start as ``None``)**
+
+    block_pbin : numpy.ndarray or None
+        Block values at each flux bin, i.e. shape corresponding to `flux`.
+    block_val : numpy.ndarray or None
+        Block values per block.
+    block_val_error : numpy.ndarray or None
+        Uncertainty associated with ``block_val`` per block.
+    edge_index : numpy.ndarray or None
+        Indices in ``time`` marking the start of a new block.
+    edges : numpy.ndarray or None
+        Time coordinates of block-change boundaries.
+
 
     Examples
     --------
@@ -326,6 +342,13 @@ class LightCurve:
         if time_format:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
+
+        #Bayesian-block results
+        self.block_pbin = None
+        self.block_val = None
+        self.block_val_error = None
+        self.edge_index = None
+        self.edges = None
 
     def __repr__(self):
         """
@@ -777,17 +800,17 @@ class LightCurve:
         - Errors are not recomputed after thresholding. TBD: thresholderror.
 
         """
-        # Replace all values below threshold
-        try:
-            self.block_pbin = np.where(
-                self.block_pbin > threshold, self.block_pbin, threshold
-            )
-            self.block_val = np.where(
-                self.block_val > threshold, self.block_val, threshold
-            )
-        except AttributeError as err:
+        if self.block_pbin is None or self.block_val is None:
             msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
-            raise AttributeError(msg) from err
+            raise AttributeError(msg)
+
+        # Replace all values below threshold
+        self.block_pbin = np.where(
+            self.block_pbin > threshold, self.block_pbin, threshold
+        )
+        self.block_val = np.where(
+            self.block_val > threshold, self.block_val, threshold
+        )
 
         # Merge neighbouring threshold blocks and delete edges
         block_mask = np.ones(len(self.block_val), dtype=bool)
@@ -846,20 +869,20 @@ class LightCurve:
           But remember actual block edges correspond to time values (I think)
         - Make sure to call `.get_bblocks()` before using this function.
         """
+        if self.block_pbin is None or self.block_val is None:
+            msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
+            raise AttributeError(msg)
+
         if ax is None:
             ax = plt.gca()
-        try:
-            ax.step(
-                self.time,
-                self.block_pbin,
-                where="mid",
-                linewidth=linewidth,
-                color=color,
-                **kwargs,
-            )
-        except AttributeError as err:
-            msg = "Initialize Bayesian blocks with .get_bblocks() first!"
-            raise AttributeError(msg) from err
+        ax.step(
+            self.time,
+            self.block_pbin,
+            where="mid",
+            linewidth=linewidth,
+            color=color,
+            **kwargs,
+        )
 
     # -------------------------------------------------------------------------
     def bb_i(self, t: float):
