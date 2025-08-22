@@ -16,8 +16,8 @@ except Exception:
             "a broken installation. Please install lightcurves from "
             "the local git repository."
         ),
-        category=ImportWarning,   # or UserWarning if you prefer
-        stacklevel=2,             # point at the *importer*, not here
+        category=ImportWarning,  # or UserWarning if you prefer
+        stacklevel=2,  # point at the *importer*, not here
     )
     del warnings
     version = "0.0.0"
