@@ -68,8 +68,9 @@ class LC_Set:
         for i, lc in enumerate(lcs):
             try:
                 lc.block_pbin
-            except AttributeError:
-                raise AttributeError("Initialize Bayesian blocks for all LCs first!")
+            except AttributeError as err:
+                msg = "Initialize Bayesian blocks for all LCs first!"
+                raise AttributeError(msg) from err
 
             logging.debug(str(i))
             # optional: multiprocessing for hoparound of each lc here
@@ -84,7 +85,7 @@ class LC_Set:
             elif hop_method == "sharp":
                 hops = lc.find_hop("sharp", lc_edges)
             if hops is None:
-                logging.info(str(i) + " no hop found; not variable enough")
+                logging.info("%d no hop found; not variable enough", i)
                 continue  # skip this lc
             for hop in hops:
                 if len(hop.flux) > 3:
@@ -120,15 +121,15 @@ class LC_Set:
 
     @property
     def exp_tr(self):
-        return np.array([h.exp_tr for h in hopjects])[mask]
+        return np.array([h.exp_tr for h in self.hopjects])
 
     # ----------------------------------------------------------------------------------------------
-    def zcor(self, times):  # times = e.g. LC_Set.dur
-        if len(np.where(np.isnan(self.z) == True)[0]) > 0:
-            print("Error: not all LCs have a redshift")
-        else:
-            times_intr = times / (1 + self.z)
-            return times_intr
+    def zcor(self, times):
+        """Return times (e.g. LC_Set.dur) corrected by redshift: t_intr = t_obs / (1 + z)."""
+        z = np.asarray(self.z, dtype=float)
+        if np.isnan(z).any():
+            raise ValueError("Not all LCs have a redshift (NaN in self.z).")
+        return np.asarray(times, dtype=float) / (1 + z)
 
     # ----------------------------------------------------------------------------------------------
     def plot_asym(self, N_bins=None, dens=True):

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
+from collections.abc import Sequence
 
 import astropy
 import astropy.stats.bayesian_blocks as bblocks
@@ -784,7 +785,7 @@ class LightCurve:
             self.block_val = np.where(
                 self.block_val > threshold, self.block_val, threshold
             )
-        except AttributeError:
+        except AttributeError as err:
             msg = "Initialize Bayesian blocks with lc.get_bblocks() first!"
             raise AttributeError(msg) from err
 
@@ -856,7 +857,7 @@ class LightCurve:
                 color=color,
                 **kwargs,
             )
-        except AttributeError:
+        except AttributeError as err:
             msg = "Initialize Bayesian blocks with .get_bblocks() first!"
             raise AttributeError(msg) from err
 
@@ -1003,7 +1004,7 @@ class LightCurve:
     def plot_hop(
         self,
         ax: Axes | None = None,
-        color: str | list[str] = ["lightsalmon", "orchid"],
+        color: str | Sequence[str] = ("lightsalmon", "orchid"),
         alpha: float = 0.2,
         label: str | None = None,
         zorder: float = 0,
@@ -1080,31 +1081,33 @@ class LightCurve:
         fig = plt.figure(0, (15, 9))
         plt.suptitle("All HOP methods", fontsize=16)
 
-        ax0 = fig.add_subplot(511)
+        fig.add_subplot(511)
         self.find_hop("baseline")
         self.plot_bblocks()
         self.plot_lc()
         self.plot_hop()
         plt.ylabel("baseline")
 
-        ax1 = fig.add_subplot(512)
+        fig.add_subplot(512)
         self.find_hop("half")
         self.plot_bblocks()
         self.plot_lc()
         self.plot_hop()
         plt.ylabel("half")
 
-        ax2 = fig.add_subplot(513)
+        fig.add_subplot(513)
         self.find_hop("flip")
         self.plot_bblocks()
         self.plot_lc()
         self.plot_hop()
         plt.ylabel("flip")
 
-        ax3 = fig.add_subplot(514)
+        fig.add_subplot(514)
         self.find_hop("sharp")
         self.plot_bblocks()
         self.plot_lc()
         self.plot_hop()
         plt.ylabel("sharp")
+
         fig.subplots_adjust(hspace=0)
+        return fig
