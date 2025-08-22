@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import logging
 import pickle
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 
 import astropy
 import astropy.stats.bayesian_blocks as bblocks
@@ -14,7 +14,6 @@ from matplotlib.axes import Axes  # for type hints only
 # https://docs.astropy.org/en/stable/api/astropy.stats.bayesian_blocks.html
 import lightcurves.hop_finder as hf
 from lightcurves.hop import Hopject
-
 
 logging.basicConfig(level=logging.ERROR)
 """
@@ -345,7 +344,7 @@ class LightCurve:
             """ format of the astropy.time.Time object """
             self.astropy_time = astropy.time.Time(time, format=time_format)
 
-        #Bayesian-block results
+        # Bayesian-block results
         self.block_pbin = None
         self.block_val = None
         self.block_val_error = None
@@ -810,9 +809,7 @@ class LightCurve:
         self.block_pbin = np.where(
             self.block_pbin > threshold, self.block_pbin, threshold
         )
-        self.block_val = np.where(
-            self.block_val > threshold, self.block_val, threshold
-        )
+        self.block_val = np.where(self.block_val > threshold, self.block_val, threshold)
 
         # Merge neighbouring threshold blocks and delete edges
         block_mask = np.ones(len(self.block_val), dtype=bool)
